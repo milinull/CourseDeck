@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bem-vindo ao Course Manager</title>
+  <link rel="stylesheet" href="styles/style.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+   
+  </style>
+</head>
+<body>
+  <div class="welcome-container">
+    <i class="fas fa-play-circle welcome-icon"></i>
+    <h1>Bem-vindo ao Course Deck</h1>
+    <p>
+      Organize e assista seus videos de cursos de forma simples e eficiente.
+      Selecione a pasta que contem seus cursos para começar.
+    </p>
+    <button id="selectFolder" class="select-folder-btn">
+      <i class="fas fa-folder-open"></i>
+      Selecionar Pasta de Cursos
+    </button>
+    <div id="recentFoldersArea" style="margin-top: 20px; display: none;">
+      <p style="color: #64748b; margin-bottom: 10px; font-size: 0.9rem;">Recentes:</p>
+      <div id="recentList" style="display: flex; flex-direction: column; gap: 8px; align-items: center;">
+        </div>
+    </div>
+    <div id="loading" class="loading">
+      <i class="fas fa-spinner"></i>
+      Carregando seus cursos...
+    </div>
+  </div>
+
+<script src="js/welcome.js"></script>
+</body>
+</html>

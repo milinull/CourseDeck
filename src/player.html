@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Course Deck</title>
+  <link rel="stylesheet" href="styles/player.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+  <div class="header">
+    <div class="header-left">
+        <button class="icon-btn" onclick="toggleSidebar()" title="Expandir/Recolher Menu">
+            <i class="fas fa-bars"></i>
+        </button>
+        <button class="change-folder" onclick="window.location.href='welcome.html'">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </button>
+    </div>
+
+    <h1 id="courseTitle">Course Deck</h1>
+    
+    <div class="header-right">
+    <button class="icon-btn" onclick="toggleNotesSidebar()" title="Mostrar/Esconder Anotações">
+        <i class="fas fa-columns"></i>
+    </button>
+</div>
+  </div>
+
+  <div class="container">
+      <div class="sidebar">
+        <div style="padding: 16px 16px 0 16px;">
+            <input type="text" id="searchBox" placeholder="Buscar aula..." onkeyup="filterLessons(this.value)" class="search-input">
+        </div>
+        <div id="courseList" class="courseList"></div>
+      </div>
+
+      <div id="resizer" class="resizer"></div> 
+
+      <div class="main-content">
+        
+        <div class="content-area">
+            <div id="videoContainer" style="display: none;">
+                <div class="video-player-container">
+                  <video id="videoPlayer" controls>Seu navegador não suporta vídeo.</video>
+                </div>
+                
+                <div class="video-controls">
+                  <button onclick="toggleTheaterMode()" class="nav-btn" title="Modo Cinema" style="flex: 0;">
+                      <i class="fas fa-tv"></i>
+                  </button>
+                  
+                  <button onclick="prevLesson()" class="nav-btn">
+                      <i class="fas fa-step-backward"></i> Anterior
+                  </button>
+
+                  <select id="speedRate" class="speed-selector" onchange="changeSpeed(this)">
+                      <option value="1">1.0x</option>
+                      <option value="1.25">1.25x</option>
+                      <option value="1.5">1.5x</option>
+                      <option value="2">2.0x</option>
+                  </select>
+                  
+                  <button onclick="nextLesson()" class="nav-btn">
+                      Próximo <i class="fas fa-step-forward"></i>
+                  </button>
+              </div>
+
+                <div id="transcriptContainer" style="display: none; margin-top: 16px;">
+                    <button class="accordion-toggle" onclick="toggleSection('transcriptContent', this)">
+                        <span><i class="fas fa-closed-captioning"></i> Transcrição</span>
+                        <i class="fas fa-chevron-down arrow"></i>
+                    </button>
+                    <div id="transcriptContent" class="accordion-content" style="display: none;">
+                        <div id="transcriptText"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="textContainer" style="display: none; height: 100%; flex-direction: column;">
+                <div class="text-lesson-paper">
+                    <iframe id="contentFrame" class="content-frame"></iframe>
+                </div>
+                <div class="video-controls" style="flex-shrink: 0;">
+                    <button onclick="prevLesson()" class="nav-btn">Anterior</button>
+                    <button onclick="nextLesson()" class="nav-btn">Próximo</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="notes-sidebar">
+            <div class="notes-header">
+                <i class="fas fa-sticky-note"></i> Minhas Anotações
+            </div>
+
+              <div class="pomodoro-widget">
+                <div class="pomo-display-area">
+                    <div id="pomoWork" class="timer-text active" onclick="setPomoMode('work')" title="Foco">
+                        <input type="number" id="workMin" value="25" min="1" onchange="updatePomoSettings()">:<span id="workSec">00</span>
+                    </div>
+                    
+                    <span class="pomo-separator">|</span>
+                    
+                    <div id="pomoBreak" class="timer-text" onclick="setPomoMode('break')" title="Pausa">
+                        <input type="number" id="breakMin" value="05" min="1" onchange="updatePomoSettings()">:<span id="breakSec">00</span>
+                    </div>
+                </div>
+
+                <div class="pomo-controls-mini">
+                    <button onclick="togglePomodoro()" id="pomoBtn"><i class="fas fa-play"></i></button>
+                    <button onclick="resetPomodoro()"><i class="fas fa-redo"></i></button>
+                </div>
+            </div>
+            <textarea id="userNoteInput" 
+                      placeholder="Anote aqui..."
+                      class="notes-textarea"></textarea>
+            <p id="saveStatus">Pronto para digitar</p>
+        </div>
+
+      </div>
+  </div>
+
+  <script src="js/player.js"></script>
+</body>
+
+</html>

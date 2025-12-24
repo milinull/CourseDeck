@@ -1,0 +1,190 @@
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+:root {
+  /* PALETA "PREMIUM MONOCHROME" */
+  --primary-color: #fafafa;    /* Branco Gelo (Destaque) */
+  --primary-hover: #ffffff;    /* Branco Puro (Hover) */
+  
+  --background-color: #09090b; /* Zinc 950 (Fundo Tela) */
+  --surface: #18181b;          /* Zinc 900 (Container) */
+  --border-color: #27272a;     /* Zinc 800 (Bordas) */
+  
+  --text-primary: #f4f4f5;     /* Texto Principal */
+  --text-muted: #a1a1aa;       /* Texto Secundário */
+}
+
+body {
+  background-color: var(--background-color);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--text-primary);
+  /* Gradiente sutil no fundo para dar profundidade */
+  background-image: radial-gradient(circle at center, #18181b 0%, #09090b 100%);
+}
+
+.welcome-container {
+  text-align: center;
+  padding: 3rem;
+  width: 100%;
+  max-width: 600px;
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  /* Sombra elegante e difusa */
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ÍCONE DE DESTAQUE (LÁ EM CIMA) */
+.welcome-icon {
+  font-size: 4.5rem;
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
+  /* Glow branco suave */
+  filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.15));
+}
+
+h1 {
+  font-size: 2.2rem;
+  margin-bottom: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  /* Gradiente no texto do título */
+  background: linear-gradient(to right, #fff, #a1a1aa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+p {
+  color: var(--text-muted);
+  margin-bottom: 2.5rem;
+  line-height: 1.6;
+  font-size: 1.1rem;
+}
+
+/* BOTÃO PRINCIPAL */
+.select-folder-btn {
+  background-color: var(--primary-color);
+  color: #09090b; /* Texto escuro no botão claro (Contraste Máximo) */
+  border: none;
+  padding: 1rem 2.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.select-folder-btn:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+  /* Glow no hover do botão */
+  box-shadow: 0 10px 20px -3px rgba(255, 255, 255, 0.15);
+}
+
+.select-folder-btn:active {
+  transform: translateY(0);
+}
+
+.loading {
+  display: none;
+  margin-top: 2rem;
+  color: var(--primary-color);
+  font-weight: 600;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* --- CORREÇÃO DA LISTA DE RECENTES --- */
+
+#recentFoldersArea {
+  margin-top: 30px !important;
+  border-top: 1px solid var(--border-color);
+  padding-top: 20px;
+  width: 100%;
+}
+
+/* Força a cor do texto "Recentes:" para cinza */
+#recentFoldersArea p {
+  color: var(--text-muted) !important;
+  font-size: 0.85rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  margin-bottom: 16px !important;
+}
+
+/* CONTAINER DOS ITENS RECENTES */
+#recentList {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ITENS INDIVIDUAIS (BOTÕES/DIVS) */
+#recentList > * {
+  background-color: rgba(255, 255, 255, 0.03) !important; /* Fundo bem sutil */
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-muted) !important; /* Texto Cinza */
+  padding: 12px 16px !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  font-size: 0.9rem !important;
+  text-align: left !important;
+  transition: all 0.2s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  
+  /* Remove qualquer sombra ou cor antiga */
+  box-shadow: none !important;
+  text-decoration: none !important;
+}
+
+/* HOVER NO ITEM RECENTE */
+#recentList > *:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: var(--primary-color) !important;
+  color: var(--primary-color) !important; /* Texto fica branco */
+  transform: translateX(4px); 
+}
+
+/* --- AQUI ESTÁ A CORREÇÃO DO ÍCONE ROXO --- */
+/* Forçamos a cor cinza/branca ignorando qualquer estilo inline do JS */
+
+#recentList i,
+#recentList svg,
+#recentList .fas,
+#recentList .fa-history,
+#recentList span i {
+    color: var(--text-muted) !important; /* Cinza Padrão */
+    background: transparent !important;
+    -webkit-text-fill-color: initial !important; /* Remove gradientes roxos */
+    text-shadow: none !important;
+}
+
+/* Ícone fica branco ao passar o mouse */
+#recentList > *:hover i,
+#recentList > *:hover svg {
+    color: var(--primary-color) !important;
+}

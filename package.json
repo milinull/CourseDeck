@@ -1,0 +1,36 @@
+{
+  "name": "course-manager",
+  "version": "1.0.0",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "build": {
+    "appId": "com.course-manager.electron",
+    "productName": "Course Manager",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "icon": "src/assets/icon.ico",
+      "target": "nsis"
+    },
+    "mac": {
+      "icon": "src/assets/icon.icns",
+      "target": "dmg"
+    },
+    "linux": {
+      "icon": "src/assets/icon.png",
+      "target": "AppImage"
+    }
+  },
+  "devDependencies": {
+    "electron": "^39.2.7",
+    "electron-builder": "^25.1.8"
+  }
+}
