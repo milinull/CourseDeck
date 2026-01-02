@@ -51,7 +51,6 @@ window.addEventListener('load', () => {
               
               clearTimeout(saveTimeout);
               saveTimeout = setTimeout(async () => {
-                  // Salva o HTML completo para manter cores e negrito
                   const htmlContent = quill.root.innerHTML;
                   await ipcRenderer.invoke('save-note', activeLessonPath, htmlContent);
                   saveStatus.innerText = 'Salvo ✓';
@@ -505,11 +504,17 @@ function toggleTheaterMode() {
     document.body.classList.toggle('theater-active');
 }
 
-// --- POMODORO ---
+// --- POMODORO AUTOMÁTICO COM SOM ---
 let pomoInterval = null;
 let isPomoRunning = false;
 let currentMode = 'work';
 let timeRemaining = 25 * 60; 
+
+// Correto: Inicializando imediatamente
+const bellSound = new Audio('./assets/pop.mp3'); 
+// ou apenas 'assets/pop.mp3'
+
+bellSound.volume = 0.5; // Definir volume (0.0 a 1.0)
 
 function updatePomoDisplay() {
     const minutes = Math.floor(timeRemaining / 60);
@@ -529,13 +534,15 @@ function updatePomoDisplay() {
     }
     
     if (isPomoRunning) {
-        document.title = `(${minutes}:${seconds.toString().padStart(2, '0')}) Course Manager`;
+        const icon = currentMode === 'work' ? 'Foco' : 'Pausa';
+        document.title = `(${minutes}:${seconds.toString().padStart(2, '0')}) ${icon} - Course Deck`;
     } else {
-        document.title = "Course Manager";
+        document.title = "Course Deck";
     }
 }
 
 function updatePomoSettings() {
+    // Se estiver rodando, não atualiza o tempo restante para não resetar o timer
     if (isPomoRunning) return; 
 
     let workInput = document.getElementById('workMin');
@@ -557,8 +564,15 @@ function updatePomoSettings() {
 }
 
 function setPomoMode(mode) {
+    // Se clicar manualmente, queremos parar. 
+    // Mas se for automático (loop), o togglePomodoro cuida disso.
     if (isPomoRunning && mode !== currentMode) {
-        togglePomodoro();
+        // Se o usuário clicou para mudar o modo manualmente enquanto roda, pausamos.
+        clearInterval(pomoInterval);
+        isPomoRunning = false;
+        document.querySelector('#pomoBtn i').className = 'fas fa-play';
+        document.getElementById('workMin').disabled = false;
+        document.getElementById('breakMin').disabled = false;
     }
     
     currentMode = mode;
@@ -571,30 +585,53 @@ function setPomoMode(mode) {
 
 function togglePomodoro() {
     const btnIcon = document.querySelector('#pomoBtn i');
-    const minInput = document.getElementById(currentMode === 'work' ? 'workMin' : 'breakMin');
+    const minInput = document.getElementById('workMin');
+    const breakInput = document.getElementById('breakMin');
     
     if (isPomoRunning) {
+        // PAUSAR
         clearInterval(pomoInterval);
         isPomoRunning = false;
         btnIcon.className = 'fas fa-play';
-        minInput.disabled = false; 
+        minInput.disabled = false;
+        breakInput.disabled = false;
+        document.title = "Course Deck";
     } else {
+        // INICIAR
         isPomoRunning = true;
         btnIcon.className = 'fas fa-pause';
-        minInput.disabled = true; 
+        minInput.disabled = true;
+        breakInput.disabled = true;
         
         pomoInterval = setInterval(() => {
             if (timeRemaining > 0) {
                 timeRemaining--;
                 updatePomoDisplay();
             } else {
-                clearInterval(pomoInterval);
-                isPomoRunning = false;
-                btnIcon.className = 'fas fa-play';
-                minInput.disabled = false;
+                // --- O TEMPO ACABOU ---
                 
-                alert(currentMode === 'work' ? "Foco finalizado! Hora da pausa." : "Pausa finalizada! De volta ao trabalho.");
-                setPomoMode(currentMode === 'work' ? 'break' : 'work');
+                // 1. Toca o Som
+                bellSound.play().catch(e => console.log("Erro som:", e));
+
+                // 2. Troca o Modo Automaticamente (Loop Infinito)
+                if (currentMode === 'work') {
+                    currentMode = 'break';
+                } else {
+                    currentMode = 'work';
+                }
+                
+                // 3. Atualiza Visual (Classes CSS)
+                document.getElementById('pomoWork').className = currentMode === 'work' ? 'timer-text active' : 'timer-text';
+                document.getElementById('pomoBreak').className = currentMode === 'break' ? 'timer-text active' : 'timer-text';
+                
+                // 4. Reseta o tempo para o novo modo
+                // Lemos os inputs diretamente para garantir o tempo certo
+                let workVal = parseInt(document.getElementById('workMin').value) || 25;
+                let breakVal = parseInt(document.getElementById('breakMin').value) || 5;
+                
+                timeRemaining = (currentMode === 'work' ? workVal : breakVal) * 60;
+                
+                // 5. O setInterval continua rodando...
             }
         }, 1000);
     }
@@ -606,11 +643,18 @@ function resetPomodoro() {
     document.querySelector('#pomoBtn i').className = 'fas fa-play';
     document.getElementById('workMin').disabled = false;
     document.getElementById('breakMin').disabled = false;
+    
+    // Volta sempre para o modo Trabalho ao resetar
+    currentMode = 'work';
+    document.getElementById('pomoWork').className = 'timer-text active';
+    document.getElementById('pomoBreak').className = 'timer-text';
+    
     updatePomoSettings();
     updatePomoDisplay();
+    document.title = "Course Deck";
 }
 
-// --- REDIMENSIONAMENTO DA SIDEBAR ---
+// --- REDIMENSIONAMENTO DA SIDEBAR (ESQUERDA) ---
 const sidebar = document.querySelector('.sidebar');
 const resizer = document.getElementById('resizer');
 let isResizing = false;
@@ -619,7 +663,11 @@ if (resizer) {
     resizer.addEventListener('mousedown', (e) => {
         isResizing = true;
         document.body.style.cursor = 'col-resize';
+        document.body.classList.add('resizing-active'); // Ajuda com o problema do iframe
         resizer.classList.add('resizing');
+        
+        // DESLIGA a animação para ficar fluido
+        sidebar.classList.add('no-transition'); 
     });
 
     document.addEventListener('mousemove', (e) => {
@@ -635,7 +683,224 @@ if (resizer) {
         if (isResizing) {
             isResizing = false;
             document.body.style.cursor = 'default';
+            document.body.classList.remove('resizing-active');
             resizer.classList.remove('resizing');
+            
+            // LIGA a animação de volta (para o botão de fechar funcionar suave)
+            sidebar.classList.remove('no-transition');
         }
     });
+}
+
+// --- REDIMENSIONADOR DIREITO (NOTAS) ---
+const notesSidebar = document.querySelector('.notes-sidebar');
+const resizerRight = document.getElementById('resizer-right');
+let isResizingRight = false;
+
+if (resizerRight) {
+    resizerRight.addEventListener('mousedown', (e) => {
+        isResizingRight = true;
+        document.body.style.cursor = 'col-resize';
+        document.body.classList.add('resizing-active');
+        resizerRight.classList.add('resizing');
+        
+        // DESLIGA a animação
+        notesSidebar.classList.add('no-transition');
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isResizingRight) return;
+        e.preventDefault();
+        
+        let newWidth = window.innerWidth - e.clientX;
+        
+        if (newWidth < 250) newWidth = 250;
+        if (newWidth > 800) newWidth = 800;
+        
+        notesSidebar.style.width = `${newWidth}px`;
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isResizingRight) {
+            isResizingRight = false;
+            document.body.style.cursor = 'default';
+            document.body.classList.remove('resizing-active');
+            resizerRight.classList.remove('resizing');
+            
+            // LIGA a animação de volta
+            notesSidebar.classList.remove('no-transition');
+        }
+    });
+}
+
+// --- SISTEMA DE DESENHO (CANVAS) ---
+const modal = document.getElementById('drawingModal');
+const canvas = document.getElementById('drawingCanvas');
+let ctx;
+let isDrawing = false;
+let currentColor = '#ffffff'; // Cor atual
+
+// Variáveis de Histórico (Undo)
+let drawingHistory = [];
+let historyStep = -1;
+
+function setupCanvas() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+    
+    ctx = canvas.getContext('2d');
+    
+    // Configuração inicial
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    
+    // Reseta histórico ao abrir
+    drawingHistory = [];
+    historyStep = -1;
+    saveHistory(); // Salva o estado em branco inicial
+    
+    // Reseta para pincel (caso tenha fechado com borracha)
+    useBrush();
+}
+
+// --- FUNÇÕES DE PINCEL E BORRACHA ---
+
+// Ativa modo Pincel (Chamado ao escolher cor)
+window.setColor = function(color, element) {
+    currentColor = color;
+    useBrush(); // Garante que saiu do modo borracha
+    
+    // Atualiza visual da bolinha
+    document.querySelectorAll('.color-swatch').forEach(el => el.classList.remove('active'));
+    if(element) element.classList.add('active');
+}
+
+// Função interna para configurar o pincel normal
+function useBrush() {
+    if(!ctx) return;
+    ctx.globalCompositeOperation = 'source-over'; // Modo desenho normal
+    ctx.strokeStyle = currentColor;
+    ctx.lineWidth = 2;
+    
+    // Remove destaque do botão borracha
+    const btnEraser = document.getElementById('btnEraser');
+    if(btnEraser) btnEraser.classList.remove('active-tool');
+}
+
+// Ativa modo Borracha
+window.toggleEraser = function(btnElement) {
+    if(!ctx) return;
+    ctx.globalCompositeOperation = 'destination-out'; // Modo "Apagar" (deixa transparente)
+    ctx.lineWidth = 15; // Borracha mais grossa que o pincel
+    
+    // Tira seleção das cores
+    document.querySelectorAll('.color-swatch').forEach(el => el.classList.remove('active'));
+    
+    // Destaca botão da borracha
+    if(btnElement) btnElement.classList.add('active-tool');
+}
+
+// --- SISTEMA DE HISTÓRICO (UNDO) ---
+
+function saveHistory() {
+    historyStep++;
+    // Se desenhou algo depois de dar undo, apaga o futuro (timeline alternativa)
+    if (historyStep < drawingHistory.length) {
+        drawingHistory.length = historyStep;
+    }
+    drawingHistory.push(canvas.toDataURL());
+}
+
+window.undoLastStroke = function() {
+    if (historyStep > 0) {
+        historyStep--;
+        const canvasPic = new Image();
+        canvasPic.src = drawingHistory[historyStep];
+        canvasPic.onload = function () {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Importante: desenhar a imagem salva com o modo 'source-over' para não bugar a borracha
+            let previousMode = ctx.globalCompositeOperation;
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.drawImage(canvasPic, 0, 0);
+            ctx.globalCompositeOperation = previousMode; // Restaura modo (borracha ou pincel)
+        }
+    }
+}
+
+// --- JANELA MODAL ---
+
+window.openDrawingModal = function() {
+    modal.style.display = 'flex';
+    setTimeout(setupCanvas, 50);
+}
+
+window.closeDrawingModal = function() {
+    modal.style.display = 'none';
+}
+
+window.clearCanvas = function() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    saveHistory(); // Salva o estado limpo
+}
+
+// --- EVENTOS DO MOUSE ---
+
+canvas.addEventListener('mousedown', (e) => {
+    isDrawing = true;
+    ctx.beginPath();
+    ctx.moveTo(e.offsetX, e.offsetY);
+});
+
+canvas.addEventListener('mousemove', (e) => {
+    if (!isDrawing) return;
+    ctx.lineTo(e.offsetX, e.offsetY);
+    ctx.stroke();
+});
+
+canvas.addEventListener('mouseup', () => {
+    if(isDrawing) {
+        isDrawing = false;
+        saveHistory(); // <--- SALVA O TRAÇO ASSIM QUE SOLTA O MOUSE
+    }
+});
+
+canvas.addEventListener('mouseout', () => {
+    if(isDrawing) {
+        isDrawing = false;
+        saveHistory();
+    }
+});
+
+// --- ATALHO DE TECLADO (CTRL + Z) ---
+document.addEventListener('keydown', (e) => {
+    // Só funciona se o modal estiver aberto
+    if (modal.style.display === 'flex') {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+            e.preventDefault();
+            window.undoLastStroke();
+        }
+    }
+});
+
+// --- INSERIR NO QUILL (MANTIDO) ---
+window.insertDrawing = function() {
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    const tCtx = tempCanvas.getContext('2d');
+    
+    tCtx.drawImage(canvas, 0, 0);
+    const dataURL = tempCanvas.toDataURL('image/png');
+
+    if (quill) {
+        const range = quill.getSelection(true); 
+        let index = range ? range.index : quill.getLength();
+        
+        quill.insertEmbed(index, 'image', dataURL);
+        quill.insertText(index + 1, '\n');
+        quill.setSelection(index + 2);
+    }
+    
+    closeDrawingModal();
 }

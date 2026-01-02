@@ -1,966 +1,378 @@
-/* RESET E VARIÁVEIS GERAIS */
+/* ==========================================================================
+   1. RESET, VARIÁVEIS E SCROLLBAR
+   ========================================================================== */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  /* Fonte Moderna solicitada */
   font-family: "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 :root {
-  /* CORES NOVAS - FUNDO ZINC & DESTAQUE BRANCO */
-  --primary: #fafafa;          /* Branco Gelo (Destaque Principal) */
-  --primary-hover: #ffffff;    /* Branco Puro */
+  /* PALETA DARK (ZINC) */
+  --primary: #fafafa;         /* Branco Gelo */
+  --bg-main: #09090b;         /* Fundo Principal */
+  --bg-secondary: #18181b;    /* Painéis */
+  --bg-tertiary: #27272a;     /* Hovers/Bordas */
   
-  --bg-main: #09090b;          /* Preto Zinc (Fundo Base) */
-  --bg-secondary: #18181b;     /* Zinc Escuro (Sidebars) */
-  --bg-tertiary: #27272a;      /* Zinc Médio (Hovers) */
-  
-  --text-primary: #f4f4f5;     /* Texto Claro */
-  --text-secondary: #a1a1aa;   /* Texto Cinza */
-  --border: #27272a;           /* Borda Sutil */
+  --text-primary: #f4f4f5;    
+  --text-secondary: #a1a1aa;  
+  --border: #27272a;          
   
   --sidebar-width: 320px;
-  --success: #2942ff;        
   
-  /* NOVA VARIÁVEL ESPECÍFICA PARA O POMODORO */
-  --pomo-red: #efde44;         /* Vermelho solicitado */
+  /* NOVA COR DE SUCESSO (Azul mais suave e moderno) */
+  --success: #3b82f6;         
+  
+  --pomo-red: #efde44;        
 }
+
+/* Scrollbar Escura Global */
+*::-webkit-scrollbar { width: 8px; height: 8px; background-color: var(--bg-main); }
+*::-webkit-scrollbar-track { background-color: var(--bg-main); }
+*::-webkit-scrollbar-thumb { background-color: var(--bg-tertiary); border-radius: 4px; border: 2px solid var(--bg-main); }
+*::-webkit-scrollbar-thumb:hover { background-color: var(--text-secondary); }
 
 body {
   background-color: var(--bg-main);
   color: var(--text-primary);
   height: 100vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  display: flex; flex-direction: column; overflow: hidden;
 }
 
-/* --- CABEÇALHO --- */
+/* ==========================================================================
+   2. CABEÇALHO
+   ========================================================================== */
 .header {
   background-color: var(--bg-secondary);
   height: 60px;
   padding: 0 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-  z-index: 10;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border); flex-shrink: 0; z-index: 20;
 }
 
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
+.header-left { display: flex; align-items: center; gap: 16px; }
+.header h1 { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); }
 
-.header h1 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--text-primary);
+.icon-btn, .change-folder {
+    background: transparent; border: none; color: var(--text-secondary);
+    cursor: pointer; border-radius: 4px; transition: 0.2s;
+    display: flex; align-items: center; gap: 8px;
 }
+.icon-btn { font-size: 1.2rem; padding: 6px; }
+.change-folder { border: 1px solid var(--border); padding: 8px 16px; font-size: 0.85rem; }
+.icon-btn:hover, .change-folder:hover { background: var(--bg-tertiary); color: var(--text-primary); }
 
-/* Botões do Header (Voltar e Menu) */
-.icon-btn {
-    background: transparent;
-    border: none;
-    color: var(--text-secondary);
-    font-size: 1.2rem;
-    cursor: pointer;
-    padding: 6px;
-    border-radius: 4px;
-    transition: 0.2s;
-}
-.icon-btn:hover { color: var(--text-primary); background: var(--bg-tertiary);
-}
 
-.change-folder {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: 0.2s;
-  font-size: 0.85rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+/* ==========================================================================
+   3. SIDEBAR ESQUERDA (CURSOS)
+   ========================================================================== */
+.container { display: flex; flex: 1; height: calc(100vh - 60px); overflow: hidden; }
 
-.change-folder:hover {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border-color: var(--text-secondary);
-}
-
-/* --- LAYOUT PRINCIPAL (3 COLUNAS) --- */
-.container {
-  display: flex;
-  flex: 1;
-  height: calc(100vh - 60px);
-  overflow: hidden;
-}
-
-/* COLUNA 1: BARRA LATERAL (CURSOS) */
 .sidebar {
-  width: var(--sidebar-width);
-  min-width: var(--sidebar-width);
-  /* Garante largura mínima */
+  width: var(--sidebar-width); min-width: 200px;
   background-color: var(--bg-secondary);
   border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
-  transition: all 0.3s ease; /* Animação suave ao fechar */
+  display: flex; flex-direction: column; flex-shrink: 0;
+  transition: all 0.3s ease; z-index: 10;
 }
-
-/* Estado Fechado (Collapsed) */
-.sidebar.collapsed {
-    width: 0;
-    min-width: 0;
-    border-right: none;
-    opacity: 0;
-}
+.sidebar.collapsed { width: 0 !important; min-width: 0 !important; border: none; opacity: 0; }
 
 .search-input {
-    width: 100%; 
-    padding: 8px; 
-    border-radius: 4px;
-    border: 1px solid var(--border); 
-    background: var(--bg-main); 
-    color: var(--text-primary);
-    margin-bottom: 10px;
-    outline: none;
+    width: 100%; padding: 8px; border-radius: 4px;
+    border: 1px solid var(--border); background: var(--bg-main); 
+    color: var(--text-primary); margin-bottom: 10px; outline: none;
 }
-.search-input:focus { border-color: var(--primary);
-}
+.search-input:focus { border-color: var(--primary); }
 
 .courseList {
-  display: flex;
-  flex-direction: column;
-  padding: 16px;
-  gap: 8px;
-  overflow-y: auto;
-  height: 100%;
+  display: flex; flex-direction: column; padding: 0; gap: 0;
+  overflow-y: auto; height: 100%;
 }
 
+/* --- ESTILO DE ÁRVORE (Com Espaçamento) --- */
 .course-item {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-  background-color: var(--bg-main);
-  border: 1px solid transparent;
-  border-left: 3px solid transparent;
+  display: flex; flex-direction: column; background-color: transparent;
+  border-bottom: 1px solid var(--border); padding: 0; cursor: pointer;
+  margin-bottom: 8px; /* Espaço entre módulos */
 }
-
-.course-item:hover {
-  background-color: var(--bg-tertiary);
+.course-header { 
+    padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; 
+    border-radius: 4px; transition: background 0.2s;
 }
+.course-header:hover { background-color: var(--bg-tertiary); }
+.course-title { font-weight: 600; font-size: 0.9rem; color: var(--text-secondary); display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; transition: color 0.2s; }
+.course-header:hover .course-title { color: var(--text-primary); }
+.course-title span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
 
-.course-item.active {
-  background-color: var(--bg-tertiary);
-  border-left-color: var(--primary);
-}
-
-.course-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
-/* ARQUIVO: styles/player.css */
-
-.course-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 500;
-  font-size: 0.9rem;
-  color: var(--text-primary);
-  /* MUDANÇA: Faz o título ocupar todo o espaço sobrando */
-  flex: 1;
-  min-width: 0;
-  /* Essencial para o texto cortar certo no Flexbox */
-  padding-right: 10px;
-  /* Um respiro antes da contagem 1/10 */
-}
-
-.course-title span {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  /* max-width: 190px;
-  <--- REMOVIDO! Isso que travava o tamanho */
-  width: 100%;
-  /* Ocupa 100% do espaço flexível do pai */
-}
-
-.status-icon {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  min-width: 16px;
-}
-
-.status-icon.completed {
-  color: var(--success);
-}
-
-.progress-text {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  background: rgba(0,0,0,0.2);
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
+/* --- BARRA DE PROGRESSO (RESTAURADA) --- */
 .progress-container {
-  width: 100%;
-  height: 4px;
-  background-color: rgba(255,255,255,0.05);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.progress-bar {
-  height: 100%;
-  background-color: var(--success);
-  transition: width 0.4s ease;
-}
-
-/* ÁREA PRINCIPAL (Contém Coluna 2 e 3) */
-.main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: row; /* Coloca Vídeo e Notas lado a lado */
-  background-color: var(--bg-main);
-  overflow: hidden;
-}
-
-/* COLUNA 2: ÁREA DE VÍDEO/TEXTO (MEIO) */
-.content-area {
-    flex: 3;
-    /* Ocupa 3x mais espaço que as notas */
-    padding: 24px;
-    overflow-y: auto;
-    /* Scroll independente */
-    display: flex;
-    flex-direction: column;
-    border-right: 1px solid var(--border);
-}
-
-/* COLUNA 3: BARRA DE ANOTAÇÕES (DIREITA) */
-.notes-sidebar {
-    flex: 1; 
-    min-width: 300px;
-    max-width: 450px;
-    background-color: var(--bg-secondary);
-    display: flex;
-    flex-direction: column;
-    padding: 16px;
-    border-left: 1px solid var(--border);
-    /* ADICIONE ISSO PARA A ANIMAÇÃO: */
-    transition: all 0.3s ease;
+    width: 100%;
+    height: 4px;
+    background-color: rgba(255, 255, 255, 0.08); /* Fundo sutil */
+    flex-shrink: 0;
     overflow: hidden;
-}
-
-/* NOVA CLASSE PARA ESCONDER AS NOTAS */
-.notes-sidebar.collapsed {
-    flex: 0;
-    /* Zera o espaço flexível */
-    min-width: 0;
-    /* Zera a largura mínima */
-    width: 0;
-    /* Zera a largura */
-    padding: 0;     /* Remove o preenchimento */
-    border: none;
-    /* Remove a borda */
-    opacity: 0;
-    /* Esconde o conteúdo visualmente */
-}
-
-.notes-header {
-    font-weight: 600;
-    margin-bottom: 12px;
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.notes-textarea {
-    flex: 1; /* Ocupa toda a altura disponível */
-    background-color: var(--bg-main);
-    color: var(--text-primary);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 12px;
-    resize: none;
-    font-size: 0.95rem;
-    line-height: 1.5;
-    outline: none;
-}
-.notes-textarea:focus { border-color: var(--primary); }
-
-#saveStatus {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    margin-top: 8px;
-    text-align: right;
-    min-height: 16px;
-}
-
-/* ESTILOS DO PLAYER E CONTEÚDO */
-.video-player-container {
-  width: 100%;
-  background: black;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-  flex-shrink: 0;
-  border: 1px solid var(--border);
-}
-
-video {
-  width: 100%;
-  max-height: 70vh;
-  display: block;
-  outline: none;
-}
-
-/* ÁREA DE TEXTO (HTML LESSON) */
-#textContainer {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    flex: 1;
-    overflow: hidden;
-}
-
-.text-lesson-paper {
-    flex: 1;
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
+    /* Garante que fique colada embaixo do header, mas visível */
+    margin-top: -1px; 
     position: relative;
-    display: flex;
-    margin-bottom: 12px;
+    z-index: 1;
 }
-
-.content-frame {
-    flex: 1;
-    width: 100%;
+.progress-bar {
     height: 100%;
-    border: none;
-    display: block;
+    background-color: var(--success);
+    transition: width 0.4s ease;
 }
+.progress-text { font-size: 0.7rem; color: var(--text-secondary); }
 
-/* ÁREA DE TRANSCRIÇÃO (DROPDOWN) */
-#transcriptContent {
-    max-height: 250px !important;
-    overflow-y: auto !important;
-    display: block;
-}
+/* Aulas */
+.lesson-container { background-color: rgba(0, 0, 0, 0.2); display: none; flex-direction: column; margin-top: 1px; }
+.course-item.open .lesson-container { display: flex; }
+.course-item.open .course-header { background-color: rgba(255, 255, 255, 0.05); border-left: 3px solid var(--primary); border-top-left-radius: 0; border-bottom-left-radius: 0; }
+.course-item.open .course-title { color: var(--primary); font-weight: 700; }
+.course-item.open .course-title i { color: var(--primary); }
 
-.transcript-box { /* Classe antiga de backup */
-    max-height: 250px;
-    overflow-y: auto;
-}
-
-#transcriptText {
-    color: var(--text-primary);
-    font-size: 0.95rem;
-    line-height: 1.6;
-    white-space: pre-wrap;
-    padding: 16px;
-}
-
-/* BOTÕES E CONTROLES */
-.video-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 12px;
-    gap: 16px;
-}
-
-.nav-btn {
-    background-color: var(--bg-secondary);
-    color: var(--text-primary);
-    border: 1px solid var(--border);
-    padding: 10px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.2s;
-    flex: 1;
-}
-.nav-btn:hover { background-color: var(--bg-tertiary);
-    border-color: var(--primary); }
-.nav-btn:active { transform: scale(0.98); }
-
-.speed-selector {
-    background-color: var(--bg-secondary);
-    color: var(--text-primary);
-    border: 1px solid var(--border);
-    padding: 10px;
-    height: 42px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
-    outline: none;
-}
-.speed-selector:hover { border-color: var(--primary);
-}
-
-/* ACORDEÕES */
-.accordion-toggle {
-    width: 100%;
-    background-color: var(--bg-secondary);
-    color: var(--text-primary);
-    border: 1px solid var(--border);
-    padding: 14px;
-    text-align: left;
-    cursor: pointer;
-    font-size: 0.95rem;
-    font-weight: 600;
-    border-radius: 6px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: background 0.2s;
-}
-.accordion-toggle:hover { background-color: var(--bg-tertiary); }
-.accordion-toggle.active {
-    border-bottom: none;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    background-color: var(--bg-tertiary);
-}
-
-.accordion-content {
-    background-color: var(--bg-main);
-    border: 1px solid var(--border);
-    border-top: none;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
-    padding: 16px;
-    overflow: hidden;
-}
-
-.arrow { transition: transform 0.3s ease; }
-.accordion-toggle.active .arrow { transform: rotate(180deg);
-}
-
-/* LISTA DE VÍDEOS */
-.video-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
-    gap: 16px;
-    width: 100%;
-    padding-bottom: 20px;
-}
-
-.video-card {
-    background-color: var(--bg-secondary);
-    padding: 16px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    transition: transform 0.2s, border-color 0.2s;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 100%;
-}
-.video-card:hover { transform: translateY(-3px); border-color: var(--text-secondary);
-}
-.video-card.playing {
-    border-color: var(--primary);
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.15); /* Sombra branca */
-    background-color: rgba(255, 255, 255, 0.05);
-}
-.video-card.playing .video-title { color: var(--primary); font-weight: 700; }
-.video-card.watched { opacity: 0.6; }
-.video-card.watched:hover { opacity: 1;
-}
-
-.video-title {
-    font-size: 0.9rem;
-    margin-bottom: 16px;
-    line-height: 1.5;
-    color: var(--text-primary);
-}
-
-.video-actions { display: flex; gap: 8px;
-    margin-top: auto; }
-
-.btn {
-    flex: 1;
-    padding: 8px;
-    border-radius: 4px;
-    border: none;
-    cursor: pointer;
-    font-size: 0.8rem;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    transition: 0.2s;
-}
-.btn-play { background-color: var(--primary); color: #000; /* Texto Preto no Botão Branco */
-}
-.btn-play:hover { background-color: var(--primary-hover); }
-.btn-toggle { background-color: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
-.btn-toggle:hover { color: var(--text-primary); border-color: var(--text-secondary);
-    background: rgba(255,255,255,0.05); }
-
-/* ESTADOS VAZIOS */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-  color: var(--text-secondary);
-  width: 100%;
-  height: 100%;
-  text-align: center;
-}
-.empty-state i { font-size: 2.5rem; margin-bottom: 16px; opacity: 0.5;
-}
-
-/* --- POMODORO MINIMALISTA (V3) --- */
-
-.pomodoro-widget {
-    background-color: var(--bg-main);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 10px 14px; /* Mais compacto */
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    /* Espalha tempos e botões */
-}
-
-.pomo-display-area {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: monospace;
-    font-size: 1.1rem;
-    font-weight: bold;
-}
-
-.pomo-separator {
-    color: var(--text-secondary);
-    opacity: 0.5;
-}
-
-/* Estilo dos Grupos de Tempo (Texto) */
-.timer-text {
-    color: var(--text-secondary);
-    /* Cor padrão (inativo) */
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    transition: all 0.2s;
-}
-
-.timer-text:hover {
-    color: var(--text-primary);
-}
-
-/* Quando ativo, fica VERMELHO (MUDANÇA AQUI) */
-.timer-text.active {
-    color: var(--pomo-red); 
-    /* Vermelho Solicitado */
-    text-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
-    transform: scale(1.05);
-    /* Leve aumento */
-}
-
-/* Inputs Disfarçados (Sem borda, sem fundo) */
-.timer-text input {
-    background: transparent;
-    border: none;
-    color: inherit; /* Pega a cor do pai */
-    font-family: inherit;
-    font-size: inherit;
-    font-weight: inherit;
-    width: 28px;
-    text-align: right;
-    outline: none;
-    padding: 0;
-    -moz-appearance: textfield;
-}
-
-/* Remove setinhas do input */
-.timer-text input::-webkit-outer-spin-button,
-.timer-text input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-.timer-text input:focus {
-    border-bottom: 1px solid var(--pomo-red);
-}
-
-/* Botões Pequenos na direita */
-.pomo-controls-mini {
-    display: flex;
-    gap: 6px;
-}
-
-.pomo-controls-mini button {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-secondary);
-    cursor: pointer;
-    width: 28px;
-    height: 28px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.2s;
-    font-size: 0.75rem;
-}
-
-.pomo-controls-mini button:hover {
-    background: var(--bg-tertiary);
-    color: var(--primary);
-    border-color: var(--primary);
-}
-
-/* 2. MODO TEATRO (CINEMA) - APRIMORADO */
-body.theater-active .sidebar,
-body.theater-active .notes-sidebar,
-body.theater-active .header {
-    display: none !important;
-}
-
-body.theater-active .container {
-    height: 100vh;
-}
-
-body.theater-active .main-content {
-    background-color: #000;
-    /* Fundo preto total */
-    justify-content: center; /* Centraliza horizontalmente */
-    align-items: center;
-    /* Centraliza verticalmente (novo) */
-}
-
-body.theater-active .content-area {
-    border: none;
-    width: 100%;
-    max-width: 1400px;
-    /* Permite ficar mais largo */
-    padding: 0;
-    /* Remove padding lateral */
-    height: 100%; /* Ocupa altura total */
-    justify-content: center;
-    /* Centraliza conteúdo interno */
-}
-
-/* Aumenta o vídeo no modo teatro */
-body.theater-active .video-player-container {
-    border: none;
-    box-shadow: none;
-    max-width: 90%; /* Deixa o vídeo bem grande */
-    margin: 0 auto;
-    /* Garante centralização */
-}
-
-body.theater-active video {
-    max-height: 85vh;
-    /* Usa quase toda a altura da tela */
-}
-
-/* SCROLLBAR CUSTOMIZADA */
-::-webkit-scrollbar { width: 8px; height: 8px;
-}
-::-webkit-scrollbar-track { background: var(--bg-main); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--text-secondary);
-}
-
-/* --- NOVA SIDEBAR (MENU DE ÁRVORE) --- */
-
-/* MÓDULO (PAI) */
-.course-item {
-  display: flex;
-  flex-direction: column;
-  background-color: transparent;
-  border-bottom: 1px solid var(--border);
-  padding: 0;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.course-header {
-  padding: 12px 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.course-header:hover {
-  background-color: var(--bg-tertiary);
-}
-
-.course-title {
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-/* CONTAINER DAS AULAS (FILHOS) */
-.lesson-container {
-    background-color: rgba(0, 0, 0, 0.2);
-    /* Fundo um pouco mais escuro */
-    display: none;
-    /* Escondido por padrão */
-    flex-direction: column;
-}
-
-/* Quando o módulo está aberto */
-.course-item.open .lesson-container {
-    display: flex;
-}
-
-/* DESTAQUE DO MÓDULO ABERTO (NOVO) */
-.course-item.open .course-header {
-    background-color: rgba(255, 255, 255, 0.05); /* Branco suave */
-    border-left: 3px solid var(--primary);
-    /* Borda branca na esquerda */
-}
-
-/* Deixa o texto do título branco e negrito */
-.course-item.open .course-title {
-    color: var(--primary);
-    font-weight: 700;
-}
-
-/* Deixa a setinha branca também */
-.course-item.open .course-title i {
-    color: var(--primary);
-}
-
-/* ITEM DE AULA INDIVIDUAL */
 .sidebar-lesson {
     padding: 10px 16px 10px 24px;
-    /* Indentação na esquerda */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: flex; justify-content: space-between; align-items: center;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    transition: all 0.2s;
+    font-size: 0.85rem; color: var(--text-secondary); transition: all 0.2s;
 }
-
-.sidebar-lesson:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-    color: var(--text-primary);
-}
-
-/* Aula Ativa (Selecionada) */
+.sidebar-lesson:hover { background-color: rgba(255, 255, 255, 0.05); color: var(--text-primary); }
 .sidebar-lesson.active {
-    background-color: rgba(255, 255, 255, 0.15);
-    color: var(--primary);
-    border-left: 3px solid var(--primary);
-    padding-left: 21px; /* Compensa a borda para alinhar texto */
-    font-weight: 600;
+    background-color: rgba(255, 255, 255, 0.15); color: var(--primary);
+    border-left: 3px solid var(--primary); padding-left: 21px; font-weight: 600;
+}
+.sidebar-lesson.watched { opacity: 0.6; }
+
+.sidebar-eye { background: transparent; border: none; color: var(--text-secondary); cursor: pointer; padding: 4px; opacity: 0.5; }
+.sidebar-eye:hover { opacity: 1; color: var(--primary); }
+.sidebar-eye.watched { color: var(--success); opacity: 1; }
+.sidebar-lesson.link-item:hover span { text-decoration: underline; filter: brightness(1.2); }
+
+
+/* ==========================================================================
+   4. ÁREA CENTRAL E SIDEBAR DIREITA
+   ========================================================================== */
+.main-content { flex: 1; display: flex; flex-direction: row; background-color: var(--bg-main); overflow: hidden; }
+
+.content-area {
+    flex: 1; padding: 24px; overflow-y: auto;
+    display: flex; flex-direction: column;
+    border-right: none !important; min-width: 400px;
 }
 
-.sidebar-lesson.watched {
-    opacity: 0.6;
+.notes-sidebar {
+    flex: none !important; 
+    width: 400px; 
+    max-width: 80vw !important;
+    background-color: var(--bg-secondary);
+    display: flex; 
+    flex-direction: column; 
+    padding: 16px;
+    border-left: none !important; 
+    overflow: hidden;
+
+    /* --- ADICIONADO: A MÁGICA DA ANIMAÇÃO --- */
+    /* Anima a largura, o tamanho mínimo e o padding ao mesmo tempo */
+    transition: width 0.3s ease, min-width 0.3s ease, padding 0.3s ease;
 }
 
-/* Botão de Olho na Sidebar */
-.sidebar-eye {
-    background: transparent;
-    border: none;
-    color: var(--text-secondary);
-    cursor: pointer;
-    padding: 4px;
-    opacity: 0.5;
-    transition: 0.2s;
-}
-
-.sidebar-eye:hover {
-    opacity: 1;
-    color: var(--primary);
-}
-
-.sidebar-eye.watched {
-    color: var(--success);
-    opacity: 1;
-}
-
-/* --- REDIMENSIONAMENTO DA SIDEBAR --- */
-.resizer {
-    width: 5px;
-    background-color: transparent;
-    cursor: col-resize;
-    transition: background 0.2s;
-    z-index: 100;
-    height: 100%;
-    flex-shrink: 0; /* Impede que o resizer seja esmagado */
-}
-
-.resizer:hover, 
-.resizer.resizing {
-    background-color: var(--primary);
-    /* Fica branco quando passa o mouse */
-}
-
-/* ATUALIZAÇÃO IMPORTANTE: Adicione !important aqui */
-/* Isso garante que o botão de menu funcione mesmo se você tiver redimensionado manualmente */
-.sidebar.collapsed {
+.notes-sidebar.collapsed { 
+    /* --- REMOVIDO: display: none (Isso mata a animação) --- */
+    
+    /* --- ALTERADO PARA: --- */
+    /* Força a largura a ser zero. O !important vence o style inline do Javascript */
     width: 0 !important;
     min-width: 0 !important;
-    border: none;
-    opacity: 0;
+    
+    /* Remove o padding, senão sobra uma borda de 32px (16+16) visível */
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    
+    /* Opcional: remove bordas se tiver */
+    border: none !important;
 }
 
-/* ESTILO PARA LINKS EXTRAS */
-.sidebar-lesson.link-item {
-    cursor: pointer;
-    font-size: 0.8rem; /* Um pouco menor para diferenciar */
-}
 
-.sidebar-lesson.link-item:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-}
-
-/* Efeito de underline no texto ao passar o mouse */
-.sidebar-lesson.link-item:hover span {
-    text-decoration: underline;
-    filter: brightness(1.2);
-}
-
-/* --- CONFIGURAÇÃO DE TELA CHEIA PARA O EDITOR --- */
-
-/* 1. O container pai (que está no HTML) */
+/* ==========================================================================
+   5. EDITOR QUILL (NOTAS)
+   ========================================================================== */
 #editor-container {
-    flex: 1;          /* Ocupa todo o espaço sobrando na sidebar */
-    display: flex;
-    flex-direction: column;
-    min-height: 0;    /* Essencial para o scroll funcionar dentro do flexbox */
-    background-color: var(--bg-main);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    margin-bottom: 10px; /* Espaço antes do status "Salvo" */
+    flex: 1; display: flex; flex-direction: column; min-height: 0;
+    background-color: var(--bg-main); border: 1px solid var(--border);
+    border-radius: 6px; margin-bottom: 10px;
 }
 
-/* 2. A barra de ferramentas do Quill */
-.ql-toolbar {
-    flex-shrink: 0;   /* Não deixa a barra encolher */
-    border-bottom: 1px solid var(--border) !important;
-    border-top: none !important;
-    border-left: none !important;
-    border-right: none !important;
-    background-color: var(--bg-tertiary);
-}
+.ql-toolbar { flex-shrink: 0; border: none !important; border-bottom: 1px solid var(--border) !important; background-color: var(--bg-tertiary); }
+.ql-container { flex: 1; display: flex; flex-direction: column; border: none !important; height: auto !important; overflow: hidden; }
 
-/* 3. O container interno do Quill (onde fica o texto) */
-.ql-container {
-    flex: 1;          /* Força a expandir até o final */
-    display: flex;
-    flex-direction: column;
-    border: none !important; /* Remove borda duplicada */
-    height: auto !important; /* Sobrescreve altura fixa padrão do Quill */
-    overflow: hidden;
-}
-
-/* 4. A área digitável em si */
 .ql-editor {
-    flex: 1;          /* Ocupa toda a altura do container */
-    overflow-y: auto; /* Scroll acontece AQUI dentro */
-    color: var(--text-primary);
-    font-size: 0.95rem;
-    font-family: "Inter", sans-serif;
-    padding: 16px;
+    flex: 1; overflow-y: auto; color: var(--text-primary);
+    font-family: "Inter", sans-serif; padding: 16px;
+    font-size: 1.05rem; /* Fonte Aumentada */
 }
 
-/* Ajuste de cores dos ícones da toolbar para o tema escuro */
+/* Listas Compactas */
+.ql-editor ul, .ql-editor ol { padding-left: 1rem !important; }
+.ql-editor li { padding-left: 0 !important; margin-left: 0 !important; }
+.ql-editor .ql-indent-1 { padding-left: 1rem !important; }
+.ql-editor .ql-indent-2 { padding-left: 2rem !important; }
+
+/* Dark Mode Quill */
 .ql-snow .ql-stroke { stroke: var(--text-secondary) !important; }
 .ql-snow .ql-fill { fill: var(--text-secondary) !important; }
 .ql-picker { color: var(--text-secondary) !important; }
 
-/* Área de texto */
-#editor {
-    height: 300px; /* Altura fixa ou flex */
-    font-family: "Inter", sans-serif;
-    font-size: 0.95rem;
-    color: var(--text-primary);
+
+/* ==========================================================================
+   6. PLAYER DE VÍDEO
+   ========================================================================== */
+.video-player-container {
+  width: 100%; background: black; border-radius: 8px; overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4); flex-shrink: 0; border: 1px solid var(--border);
+}
+video { width: 100%; max-height: 70vh; display: block; outline: none; }
+
+.video-controls {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 12px; gap: 16px;
+}
+.nav-btn, .speed-selector {
+    background-color: var(--bg-secondary); color: var(--text-primary);
+    border: 1px solid var(--border); padding: 10px 20px; border-radius: 6px;
+    cursor: pointer; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;
+}
+.nav-btn:hover, .speed-selector:hover { background-color: var(--bg-tertiary); border-color: var(--primary); }
+.nav-btn { flex: 1; }
+
+#btnCaptions, .speed-selector { height: 42px !important; width: 48px !important; padding: 0 !important; flex: 0 0 auto; }
+#btnCaptions.active { background-color: var(--bg-tertiary); border-color: var(--success); color: var(--success); }
+
+/* Transcrição */
+#transcriptContainer { margin-top: 16px; }
+.accordion-toggle {
+    width: 100%; background-color: var(--bg-secondary); color: var(--text-primary);
+    border: 1px solid var(--border); padding: 14px; text-align: left;
+    cursor: pointer; font-weight: 600; border-radius: 6px;
+    display: flex; justify-content: space-between; align-items: center;
+}
+#transcriptContent {
+    background-color: var(--bg-main); border: 1px solid var(--border); border-top: none;
+    padding: 16px; max-height: 250px; overflow-y: auto;
+}
+.transcript-line { display: block; padding: 4px 8px; border-radius: 4px; margin-bottom: 4px; cursor: pointer; color: var(--text-secondary); }
+.transcript-line:hover { background-color: rgba(255, 255, 255, 0.05); color: var(--text-primary); }
+.transcript-line.active { background-color: rgba(59, 130, 246, 0.2); border-left: 3px solid var(--success); color: #fff; font-weight: 600; }
+
+
+/* ==========================================================================
+   7. EXTRAS (Resizer, Modal, Pomodoro)
+   ========================================================================== */
+.resizer { background-color: transparent; z-index: 50; flex-shrink: 0; transition: background 0.2s; }
+#resizer { width: 5px; cursor: col-resize; }
+#resizer:hover { background-color: var(--primary); }
+#resizer-right { width: 1px !important; background: var(--border); cursor: col-resize; position: relative; flex: none; }
+#resizer-right::after { content: ''; position: absolute; top: 0; bottom: 0; left: -5px; right: -5px; cursor: col-resize; }
+#resizer-right:hover, #resizer-right.resizing { background: var(--primary-color); width: 2px !important; }
+
+/* Modal Desenho */
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+.modal-content { background: var(--bg-secondary); width: 90%; max-width: 600px; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+.modal-header { padding: 12px 16px; background: var(--bg-tertiary); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+.canvas-wrapper {
+    background: var(--bg-secondary) !important; position: relative; height: 400px; cursor: crosshair;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+.modal-footer { padding: 12px; background: var(--bg-tertiary); border-top: 1px solid var(--border); }
+.color-swatch { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--border); cursor: pointer; display: inline-block; }
+.color-swatch.active { border-color: #fff; transform: scale(1.2); }
+.palette-container { display: flex; gap: 8px; margin-right: 16px; padding-right: 16px; border-right: 1px solid var(--border); }
+.tools { display: flex; gap: 4px; }
+.tools button { background: transparent; border: none; color: var(--text-primary); font-size: 1.1rem; cursor: pointer; margin-left: 10px; }
+.tools button.active-tool { color: var(--primary); transform: scale(1.1); text-shadow: 0 0 5px rgba(255, 255, 255, 0.5); }
+
+/* Pomodoro (INTOCÁVEL) */
+.pomodoro-widget {
+    background-color: var(--bg-main); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px;
+    margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;
+}
+.pomo-display-area { display: flex; align-items: center; gap: 10px; font-family: monospace; font-size: 1.1rem; font-weight: bold; }
+.pomo-separator { color: var(--text-secondary); opacity: 0.5; }
+.timer-text { color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; transition: all 0.2s; }
+.timer-text:hover { color: var(--text-primary); }
+.timer-text.active { color: var(--pomo-red); text-shadow: 0 0 10px rgba(239, 68, 68, 0.2); transform: scale(1.05); }
+.timer-text input {
+    background: transparent; border: none; color: inherit; font-family: inherit; font-size: inherit; font-weight: inherit;
+    width: 28px; text-align: right; outline: none; padding: 0; -moz-appearance: textfield;
+}
+.timer-text input::-webkit-outer-spin-button, .timer-text input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.timer-text input:focus { border-bottom: 1px solid var(--pomo-red); }
+.pomo-controls-mini { display: flex; gap: 6px; }
+.pomo-controls-mini button {
+    background: transparent; border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer;
+    width: 28px; height: 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center;
+    transition: 0.2s; font-size: 0.75rem;
+}
+.pomo-controls-mini button:hover { background: var(--bg-tertiary); color: var(--primary); border-color: var(--primary); }
+
+/* MODO TEATRO (CORRIGIDO PARA NÃO CORTAR) */
+body.theater-active .sidebar,
+body.theater-active .notes-sidebar,
+body.theater-active .header { display: none !important; }
+
+body.theater-active .container { height: 100vh; }
+body.theater-active .main-content { background-color: #000; display: flex; flex-direction: column; }
+
+body.theater-active .content-area {
+    border: none; width: 100%; height: 100%; padding: 0;
+    display: flex; flex-direction: column; align-items: center; overflow-y: auto;
 }
 
-/* --- ESTILOS DA TRANSCRIÇÃO SINCRONIZADA --- */
-.transcript-line {
+body.theater-active #videoContainer {
+    width: 100%; max-width: 1400px; margin: auto; padding: 20px; flex-shrink: 0;
+}
+
+body.theater-active .video-player-container { border: none; box-shadow: none; max-width: 100%; }
+body.theater-active video { max-height: 85vh; width: 100%; }
+
+/* --- ESTILO DO VISUALIZADOR DE HTML (TEXTO) --- */
+
+/* O container pai já tem display:flex (inline no HTML), 
+   então precisamos dizer para este filho crescer */
+.text-lesson-paper {
+    flex: 1;          /* Ocupa todo o espaço vertical sobrando acima dos botões */
+    width: 100%;      /* Largura total */
+    overflow: hidden; /* Evita barras de rolagem duplas */
+    
+    /* Opcional: Um padding para o "papel" não colar nas bordas do app */
+    padding: 0;       
+    box-sizing: border-box;
+}
+
+/* O Iframe em si */
+.content-frame {
+    width: 100%;
+    height: 100%;
+    
+    /* AQUI ESTÁ A MÁGICA: */
+    background-color: #ffffff; /* Fundo branco para ler texto preto */
+    
+    border: none;
     display: block;
-    padding: 4px 8px;
-    border-radius: 4px;
-    margin-bottom: 4px;
-    cursor: pointer;
-    transition: background 0.2s;
-    color: var(--text-secondary);
+    
+    /* Opcional: Arredondar cantos se quiser um visual mais moderno */
+    /* border-radius: 8px; */
 }
 
-.transcript-line:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-    color: var(--text-primary);
+/* --- CLASSE PARA DESATIVAR ANIMAÇÃO DURANTE O ARRASTO --- */
+.no-transition {
+    transition: none !important;
 }
 
-/* A CLASSE MÁGICA DE DESTAQUE */
-.transcript-line.active {
-    background-color: rgba(33, 150, 243, 0.2); /* Azul translúcido */
-    border-left: 3px solid #2196f3;
-    color: #fff;
-    font-weight: 600;
-}
-
-/* --- BOTÃO CC ATIVO --- */
-#btnCaptions.active {
-    background-color: var(--bg-tertiary);
-    border-color: var(--success);
-    color: var(--success); /* Fica verde ou azul quando ativo */
-}
-
-/* Correção de Altura e Largura do Botão CC */
-#btnCaptions {
-    height: 42px !important;    /* Força a altura igual ao do seletor */
-    width: 72px !important;     /* Força a largura para ficar quadrado */
-    padding: 0 !important;      /* Remove padding para centralizar o ícone */
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    flex: 0 0 auto;             /* Impede que estique ou encolha */
-    border-radius: 6px;         /* Garante o mesmo arredondamento */
-}
-
-/* Garante que o seletor vizinho tenha a mesma altura */
-.speed-selector {
-    height: 42px !important;
-    padding: 0 10px;
-    box-sizing: border-box;     /* Garante que a borda não aumente o tamanho total */
-    display: flex;
-    align-items: center;
+/* Dica Extra: Evita que o mouse "perca" o arraste se passar rápido por cima do iframe/texto */
+body.resizing-active iframe, 
+body.resizing-active .editor-container {
+    pointer-events: none;
 }
