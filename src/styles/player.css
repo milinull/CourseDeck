@@ -414,6 +414,7 @@ video {
     color: var(--text-primary);
     border: 1px solid var(--border);
     padding: 10px;
+    height: 42px;
     border-radius: 6px;
     cursor: pointer;
     font-weight: 500;
@@ -853,4 +854,113 @@ body.theater-active video {
 .sidebar-lesson.link-item:hover span {
     text-decoration: underline;
     filter: brightness(1.2);
+}
+
+/* --- CONFIGURAÇÃO DE TELA CHEIA PARA O EDITOR --- */
+
+/* 1. O container pai (que está no HTML) */
+#editor-container {
+    flex: 1;          /* Ocupa todo o espaço sobrando na sidebar */
+    display: flex;
+    flex-direction: column;
+    min-height: 0;    /* Essencial para o scroll funcionar dentro do flexbox */
+    background-color: var(--bg-main);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 10px; /* Espaço antes do status "Salvo" */
+}
+
+/* 2. A barra de ferramentas do Quill */
+.ql-toolbar {
+    flex-shrink: 0;   /* Não deixa a barra encolher */
+    border-bottom: 1px solid var(--border) !important;
+    border-top: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    background-color: var(--bg-tertiary);
+}
+
+/* 3. O container interno do Quill (onde fica o texto) */
+.ql-container {
+    flex: 1;          /* Força a expandir até o final */
+    display: flex;
+    flex-direction: column;
+    border: none !important; /* Remove borda duplicada */
+    height: auto !important; /* Sobrescreve altura fixa padrão do Quill */
+    overflow: hidden;
+}
+
+/* 4. A área digitável em si */
+.ql-editor {
+    flex: 1;          /* Ocupa toda a altura do container */
+    overflow-y: auto; /* Scroll acontece AQUI dentro */
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-family: "Inter", sans-serif;
+    padding: 16px;
+}
+
+/* Ajuste de cores dos ícones da toolbar para o tema escuro */
+.ql-snow .ql-stroke { stroke: var(--text-secondary) !important; }
+.ql-snow .ql-fill { fill: var(--text-secondary) !important; }
+.ql-picker { color: var(--text-secondary) !important; }
+
+/* Área de texto */
+#editor {
+    height: 300px; /* Altura fixa ou flex */
+    font-family: "Inter", sans-serif;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+
+/* --- ESTILOS DA TRANSCRIÇÃO SINCRONIZADA --- */
+.transcript-line {
+    display: block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+    color: var(--text-secondary);
+}
+
+.transcript-line:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+/* A CLASSE MÁGICA DE DESTAQUE */
+.transcript-line.active {
+    background-color: rgba(33, 150, 243, 0.2); /* Azul translúcido */
+    border-left: 3px solid #2196f3;
+    color: #fff;
+    font-weight: 600;
+}
+
+/* --- BOTÃO CC ATIVO --- */
+#btnCaptions.active {
+    background-color: var(--bg-tertiary);
+    border-color: var(--success);
+    color: var(--success); /* Fica verde ou azul quando ativo */
+}
+
+/* Correção de Altura e Largura do Botão CC */
+#btnCaptions {
+    height: 42px !important;    /* Força a altura igual ao do seletor */
+    width: 72px !important;     /* Força a largura para ficar quadrado */
+    padding: 0 !important;      /* Remove padding para centralizar o ícone */
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;             /* Impede que estique ou encolha */
+    border-radius: 6px;         /* Garante o mesmo arredondamento */
+}
+
+/* Garante que o seletor vizinho tenha a mesma altura */
+.speed-selector {
+    height: 42px !important;
+    padding: 0 10px;
+    box-sizing: border-box;     /* Garante que a borda não aumente o tamanho total */
+    display: flex;
+    align-items: center;
 }

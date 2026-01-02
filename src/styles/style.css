@@ -188,3 +188,58 @@ p {
 #recentList > *:hover svg {
     color: var(--primary-color) !important;
 }
+
+/* --- ATUALIZAÇÃO PARA LISTA DE RECENTES COM BOTÃO DE EXCLUIR --- */
+
+/* Ajusta o item da lista para ser um container flexível */
+.recent-item {
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 8px 12px; /* Padding um pouco menor para acomodar os elementos */
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Texto na esq, X na dir */
+  width: 100%;
+  text-decoration: none;
+  margin-bottom: 8px; /* Espaço entre itens */
+}
+
+.recent-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  transform: translateX(4px);
+}
+
+.recent-item:hover i.fa-folder {
+    color: var(--primary-color) !important;
+}
+
+/* O Botão de Excluir (X) */
+.btn-delete-recent {
+    background: transparent;
+    border: none;
+    color: #ffffff !important; /* Vermelho escuro padrão */
+    opacity: 0.6;
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    margin-left: 8px;
+}
+
+.btn-delete-recent:hover {
+    background-color: rgba(255, 255, 255, 0.2); /* Fundo vermelho translúcido */
+    opacity: 1;
+    transform: scale(1.1); /* Leve aumento */
+}

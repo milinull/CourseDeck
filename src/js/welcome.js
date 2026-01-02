@@ -41,6 +41,8 @@ function addToRecent(folderPath) {
 
 // --- Funções de Carregamento ---
 
+// --- Funções de Carregamento e Gestão ---
+
 async function loadCourseFromPath(folderPath) {
   if (!folderPath) return;
 
@@ -53,11 +55,11 @@ async function loadCourseFromPath(folderPath) {
   try {
     const courses = await ipcRenderer.invoke('read-folder', folderPath);
     
-    // Salva dados da sessão atual
+    // Salva dados da sessão
     localStorage.setItem('coursesData', JSON.stringify(courses));
     localStorage.setItem('selectedFolder', folderPath);
     
-    // Atualiza o histórico persistente
+    // Atualiza histórico
     addToRecent(folderPath);
     
     window.location.href = 'player.html';
@@ -65,8 +67,23 @@ async function loadCourseFromPath(folderPath) {
     console.error(error);
     alert('Erro ao carregar a pasta. Verifique se ela ainda existe.');
     if (loadingEl) loadingEl.style.display = 'none';
-    if (recentsEl) renderRecents(); // Re-exibe a lista se der erro
+    // Se der erro, volta a mostrar os recentes
+    renderRecents(); 
   }
+}
+
+function removeRecent(folderPathToRemove) {
+    let recent = getRecentFolders();
+    // Filtra removendo o item clicado
+    recent = recent.filter(p => p !== folderPathToRemove);
+    
+    try {
+        fs.writeFileSync(historyFile, JSON.stringify(recent));
+        // Recarrega a lista visualmente
+        renderRecents(); 
+    } catch (error) {
+        console.error('Erro ao salvar histórico:', error);
+    }
 }
 
 function renderRecents() {
@@ -74,7 +91,6 @@ function renderRecents() {
   const container = document.getElementById('recentFoldersArea');
   const list = document.getElementById('recentList');
   
-  // Se não tiver container (caso o HTML não tenha sido salvo), aborta
   if (!container || !list) return;
 
   if (recentPaths.length === 0) {
@@ -83,36 +99,44 @@ function renderRecents() {
   }
 
   container.style.display = 'block';
-  list.innerHTML = '';
+  list.innerHTML = ''; // Limpa a lista atual
 
   recentPaths.forEach(folderPath => {
-    const btn = document.createElement('button');
+    // 1. Cria o container (DIV em vez de BUTTON)
+    // Isso permite colocar botões dentro dele
+    const item = document.createElement('div');
+    item.className = 'recent-item'; 
+    item.title = folderPath;
     
-    // Pega apenas o nome final da pasta (ex: "Curso Python" de "/home/user/Curso Python")
+    // Ação ao clicar no container (Abrir Curso)
+    item.onclick = () => loadCourseFromPath(folderPath);
+
     const folderName = path.basename(folderPath);
 
-    // Estilização direta no JS para facilitar
-    btn.className = 'select-folder-btn'; 
-    btn.style.backgroundColor = '#202024'; 
-    btn.style.border = '1px solid #323238';
-    btn.style.fontSize = '0.9rem';
-    btn.style.padding = '0.6rem 1rem';
-    btn.style.width = '100%'; // Ocupa largura total disponível
-    btn.style.justifyContent = 'flex-start'; // Alinha texto à esquerda
-    
-    // Ícone de histórico + Nome da pasta
-    btn.innerHTML = `<i class="fas fa-history" style="color: #7c3aed; margin-right: 8px;"></i> ${folderName}`;
-    
-    // Adiciona dica de ferramenta (tooltip) com o caminho completo ao passar o mouse
-    btn.title = folderPath;
-    
-    btn.onclick = () => loadCourseFromPath(folderPath);
-    
-    // Efeito Hover simples
-    btn.onmouseenter = () => btn.style.borderColor = '#7c3aed';
-    btn.onmouseleave = () => btn.style.borderColor = '#323238';
+    // 2. HTML Interno: Ícone/Texto na esquerda, Botão X na direita
+    item.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px; flex: 1; overflow: hidden;">
+            <i class="fas fa-folder" style="color: #52525b; transition: color 0.2s;"></i> 
+            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                ${folderName}
+            </span>
+        </div>
+    `;
 
-    list.appendChild(btn);
+    // 3. Cria o Botão de Excluir separadamente para adicionar o evento
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'btn-delete-recent';
+    deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
+    deleteBtn.title = "Remover da lista";
+    
+    // IMPORTANTE: stopPropagation impede que o clique no X abra o curso
+    deleteBtn.onclick = (e) => {
+        e.stopPropagation(); 
+        removeRecent(folderPath);
+    };
+
+    item.appendChild(deleteBtn);
+    list.appendChild(item);
   });
 }
 
