@@ -210,13 +210,11 @@
         <div class="notes-header">
           <i class="fas fa-sticky-note"></i> Painel do Aluno
         </div>
-
         <div class="sidebar-tabs-header">
           <button
             onclick="switchTab('notes')"
             class="tab-btn active"
             id="tab-btn-notes"
-            title="Anotações"
           >
             <i class="fas fa-edit"></i>
           </button>
@@ -224,7 +222,6 @@
             onclick="switchTab('calendar')"
             class="tab-btn"
             id="tab-btn-calendar"
-            title="Calendário"
           >
             <i class="fas fa-calendar-alt"></i>
           </button>
@@ -232,9 +229,15 @@
             onclick="switchTab('stats')"
             class="tab-btn"
             id="tab-btn-stats"
-            title="Progresso"
           >
             <i class="fas fa-chart-bar"></i>
+          </button>
+          <button
+            onclick="switchTab('achievements')"
+            class="tab-btn"
+            id="tab-btn-achievements"
+          >
+            <i class="fas fa-trophy"></i>
           </button>
         </div>
 
@@ -411,6 +414,35 @@
               <h4>Consistência (Últimos 7 dias)</h4>
               <div class="bar-chart-container" id="weeklyChart"></div>
             </div>
+
+            <div class="xp-log-section" style="margin-top: 20px">
+              <h4
+                style="
+                  font-size: 0.9rem;
+                  color: var(--text-secondary);
+                  margin-bottom: 8px;
+                "
+              >
+                Últimas Atividades
+              </h4>
+              <div
+                id="xpLogList"
+                style="
+                  font-size: 0.8rem;
+                  color: var(--text-secondary);
+                  display: flex;
+                  flex-direction: column;
+                  gap: 4px;
+                "
+              ></div>
+            </div>
+          </div>
+          <div id="view-achievements" class="tab-view">
+            <div class="view-header">
+              <span>Galeria de Troféus</span>
+              <small id="badgeCount">0/0</small>
+            </div>
+            <div id="achievementsList" class="achievements-list"></div>
           </div>
         </div>
       </div>

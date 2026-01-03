@@ -15,13 +15,16 @@ let currentDate = new Date();
 let studyChecklist = JSON.parse(localStorage.getItem("studyChecklist")) || {}; // Formato: "YYYY-MM-DD": true
 
 // --- GAMIFICATION STATE ---
-// Carrega ou cria novo perfil
 let userProfile = JSON.parse(localStorage.getItem("userProfile")) || {
   xp: 0,
   level: 1,
-  totalWatchTime: 0, // em segundos (REAL)
-  badges: [], // IDs das badges conquistadas
-  lessonsCompleted: 0,
+  totalWatchTime: 0,
+  badges: [],
+  pomoSessions: 0, // Inicializado!
+  canvasDrawings: 0, // Novo: Contador de desenhos
+  dailyHistory: {}, // Novo: { "2023-10-27": 5 } (aulas por dia)
+  xpLog: [], // Novo: Histórico de ganhos
+  streakRecord: 0, // Novo: Recorde histórico
 };
 
 // Definição dos Ranks
@@ -38,23 +41,12 @@ const RANKS = [
 
 // Definição das Badges
 const BADGES = {
+  // --- INICIANTES ---
   first_lesson: {
     icon: "fa-play",
     name: "Primeiro Passo",
     desc: "Assistiu a primeira aula",
     xp: 20,
-  },
-  dedicated: {
-    icon: "fa-fire",
-    name: "Iniciante Dedicado",
-    desc: "3 dias seguidos de estudo",
-    xp: 50,
-  },
-  marathon: {
-    icon: "fa-running",
-    name: "Maratonista",
-    desc: "5 aulas em um dia",
-    xp: 100,
   },
   annotator: {
     icon: "fa-pen",
@@ -62,14 +54,62 @@ const BADGES = {
     desc: "Fez sua primeira anotação",
     xp: 30,
   },
-  hour_focus: {
-    icon: "fa-clock",
-    name: "Hora de Foco",
-    desc: "1 hora de estudo total",
+
+  // --- STREAK (CONSTÂNCIA) ---
+  dedicated: {
+    icon: "fa-fire",
+    name: "Iniciante Dedicado",
+    desc: "3 dias seguidos de estudo",
     xp: 50,
   },
+  week_streak: {
+    icon: "fa-fire-alt",
+    name: "Semana de Fogo",
+    desc: "7 dias seguidos",
+    xp: 150,
+  },
+  month_streak: {
+    icon: "fa-crown",
+    name: "Mês Imparável",
+    desc: "30 dias seguidos",
+    xp: 500,
+  },
 
-  // --- NOVAS BADGES ---
+  // --- VOLUME (INTENSIDADE) ---
+  marathon: {
+    icon: "fa-running",
+    name: "Maratonista",
+    desc: "5 aulas em um único dia",
+    xp: 100,
+  },
+  super_marathon: {
+    icon: "fa-bolt",
+    name: "Super Maratonista",
+    desc: "10 aulas em um único dia",
+    xp: 300,
+  },
+  centurion: {
+    icon: "fa-medal",
+    name: "Centurião",
+    desc: "100 aulas assistidas no total",
+    xp: 1000,
+  },
+
+  // --- TÉCNICOS ---
+  artist: {
+    icon: "fa-palette",
+    name: "Artista Digital",
+    desc: "Criou 5 desenhos",
+    xp: 50,
+  },
+  pomodoro_master: {
+    icon: "fa-stopwatch",
+    name: "Mestre do Foco",
+    desc: "5 sessões Pomodoro",
+    xp: 150,
+  },
+
+  // --- HORÁRIO ---
   early_bird: {
     icon: "fa-sun",
     name: "Madrugador",
@@ -84,15 +124,23 @@ const BADGES = {
   },
   weekend_warrior: {
     icon: "fa-calendar-week",
-    name: "Guerreiro de Fim de Semana",
-    desc: "Estudou no Sábado ou Domingo",
+    name: "Guerreiro FDS",
+    desc: "Estudou Sábado ou Domingo",
     xp: 60,
   },
-  pomodoro_master: {
-    icon: "fa-stopwatch",
-    name: "Mestre do Foco",
-    desc: "Completou 5 sessões Pomodoro",
-    xp: 150,
+
+  // --- CONCLUSÃO ---
+  hour_focus: {
+    icon: "fa-clock",
+    name: "Hora de Foco",
+    desc: "1 hora de estudo total",
+    xp: 50,
+  },
+  finisher: {
+    icon: "fa-flag-checkered",
+    name: "Finalizador",
+    desc: "Completou um curso 100%",
+    xp: 500,
   },
 };
 
@@ -593,18 +641,24 @@ window.toggleCaptions = function () {
 
 async function toggleWatched(courseIndex, lessonIndex) {
   const lesson = currentCourses[courseIndex].lessons[lessonIndex];
-
-  // Inverte o status (se era true vira false, e vice-versa)
   lesson.watched = !lesson.watched;
 
-  // --- NOVO: LÓGICA DE RECOMPENSA ---
   if (lesson.watched) {
-    // Se marcou como VISTO, ganha XP
-    addXP(50, "Aula Concluída"); // Dá 50 XP
-    checkAchievements(); // Verifica se ganhou badge (ex: 1ª aula, 100 aulas)
-  } else {
-    // (Opcional) Se desmarcou, você poderia tirar XP,
-    // mas geralmente jogos não punem o usuário, então deixamos assim.
+    // 1. Ganha XP
+    addXP(50, "Aula Concluída");
+
+    // 2. Registra no Histórico Diário (para Maratonista)
+    const today = new Date().toISOString().split("T")[0];
+    userProfile.dailyHistory[today] =
+      (userProfile.dailyHistory[today] || 0) + 1;
+
+    // 3. Salva no Checklist do Calendário (para Streak)
+    if (!studyChecklist[today]) {
+      studyChecklist[today] = true;
+      localStorage.setItem("studyChecklist", JSON.stringify(studyChecklist));
+    }
+
+    checkAchievements();
   }
   // ----------------------------------
 
@@ -1111,6 +1165,10 @@ window.insertDrawing = function () {
     quill.insertEmbed(index, "image", dataURL);
     quill.insertText(index + 1, "\n");
     quill.setSelection(index + 2);
+
+    userProfile.canvasDrawings = (userProfile.canvasDrawings || 0) + 1;
+    saveProfile();
+    checkAchievements();
   }
 
   closeDrawingModal();
@@ -1247,6 +1305,7 @@ function switchTab(tabName) {
   if (tabName === "stats") {
     updateGamificationUI(); // Chama a função nova de XP/Badges
   }
+  if (tabName === "achievements") renderAchievementsTab();
 }
 
 // --- CALENDÁRIO ---
@@ -1353,19 +1412,18 @@ function updateStreak() {
 function addXP(amount, reason) {
   const oldLevel = getRank(userProfile.xp).name;
   userProfile.xp += amount;
+
+  // Log de XP (Mantém apenas os últimos 20)
+  userProfile.xpLog.unshift({ reason, amount, date: new Date().toISOString() });
+  if (userProfile.xpLog.length > 20) userProfile.xpLog.pop();
+
   const newRank = getRank(userProfile.xp);
-
   saveProfile();
+  showToast(`+${amount} XP`, reason);
 
-  // Notifica ganho de XP
-  showToast(`+${amount} XP`, reason || "Progresso registrado");
-
-  // Verifica Level Up
   if (newRank.name !== oldLevel) {
-    showToast("LEVEL UP!", `Você agora é um ${newRank.name}!`, "achievement");
-    // Som de level up aqui seria legal
+    showToast("LEVEL UP!", `Rank: ${newRank.name}`, "achievement");
   }
-
   updateGamificationUI();
 }
 
@@ -1392,33 +1450,76 @@ function getRank(xp) {
 }
 
 function saveProfile() {
-  localStorage.setItem("userProfile", JSON.stringify(userProfile));
+  localStorage.setItem("userProfile", JSON.stringify(userProfile)); // Backup
+  ipcRenderer.invoke("save-profile", userProfile); // Salvamento Real
 }
 
 // Verifica conquistas automaticamente
 function checkAchievements() {
   const now = new Date();
   const hour = now.getHours();
-  const day = now.getDay(); // 0 = Domingo, 6 = Sábado
+  const day = now.getDay();
+  const todayStr = now.toISOString().split("T")[0];
 
-  // Badge: Hora de Foco (3600 segundos)
+  // 1. Dados Básicos
+  let watchedTotal = 0;
+  let completedCourses = 0;
+
+  if (currentCourses) {
+    currentCourses.forEach((c) => {
+      const done = c.lessons.filter((l) => l.watched).length;
+      watchedTotal += done;
+      if (done === c.lessons.length && c.lessons.length > 0) completedCourses++;
+    });
+  }
+
+  // 2. Calcula Streak Atual
+  let currentStreak = 0;
+  let d = new Date();
+  if (!studyChecklist[todayStr]) d.setDate(d.getDate() - 1); // Se não estudou hoje, checa de ontem
+  while (studyChecklist[d.toISOString().split("T")[0]]) {
+    currentStreak++;
+    d.setDate(d.getDate() - 1);
+  }
+
+  // Atualiza recorde
+  if (currentStreak > (userProfile.streakRecord || 0)) {
+    userProfile.streakRecord = currentStreak;
+  }
+
+  // 3. Aulas Hoje (Maratonista)
+  const lessonsToday = userProfile.dailyHistory[todayStr] || 0;
+
+  // --- VERIFICAÇÕES ---
+
+  // Tempo
   if (userProfile.totalWatchTime >= 3600) unlockBadge("hour_focus");
 
-  // Badge: Madrugador (Antes das 8h)
+  // Horário
   if (hour < 8 && hour >= 4) unlockBadge("early_bird");
-
-  // Badge: Coruja (Depois das 23h ou antes das 3h)
   if (hour >= 23 || hour < 3) unlockBadge("night_owl");
-
-  // Badge: Fim de Semana
   if (day === 0 || day === 6) unlockBadge("weekend_warrior");
 
-  // Badge: Primeiro Passo (1 aula)
-  let watchedCount = 0;
-  currentCourses.forEach(
-    (c) => (watchedCount += c.lessons.filter((l) => l.watched).length)
-  );
-  if (watchedCount >= 1) unlockBadge("first_lesson");
+  // Volume Total
+  if (watchedTotal >= 1) unlockBadge("first_lesson");
+  if (watchedTotal >= 100) unlockBadge("centurion");
+
+  // Volume Diário
+  if (lessonsToday >= 5) unlockBadge("marathon");
+  if (lessonsToday >= 10) unlockBadge("super_marathon");
+
+  // Streak
+  if (currentStreak >= 3) unlockBadge("dedicated");
+  if (currentStreak >= 7) unlockBadge("week_streak");
+  if (currentStreak >= 30) unlockBadge("month_streak");
+
+  // Conclusão
+  if (completedCourses >= 1) unlockBadge("finisher");
+
+  // Criativo
+  if (userProfile.canvasDrawings >= 5) unlockBadge("artist");
+
+  saveProfile();
 }
 
 function updateGamificationUI() {
@@ -1444,7 +1545,6 @@ function updateGamificationUI() {
   document.getElementById("statRealTime").innerText =
     (userProfile.totalWatchTime / 3600).toFixed(1) + "h";
 
-  // Contagem de aulas
   let watchedTotal = 0;
   if (currentCourses)
     currentCourses.forEach(
@@ -1452,12 +1552,17 @@ function updateGamificationUI() {
     );
   document.getElementById("statCompleted").innerText = watchedTotal;
 
-  // Streak (usando a função que já tínhamos)
+  // Streak e Recorde (Correção Bug #2) [cite: 5, 256]
   const streakEl = document.getElementById("streakCount");
-  if (streakEl)
-    document.getElementById("statStreak").innerText = streakEl.innerText;
+  const record = userProfile.streakRecord || 0;
+  if (streakEl) {
+    // Mostra: "5 (Recorde: 12)"
+    document.getElementById(
+      "statStreak"
+    ).innerHTML = `${streakEl.innerText} <small style='font-size:0.6rem; opacity:0.7'>(Recorde: ${record})</small>`;
+  }
 
-  // Renderiza Badges
+  // Renderiza Badges (Correção Bug #1) [cite: 257]
   const grid = document.getElementById("badgesGrid");
   if (grid) {
     grid.innerHTML = "";
@@ -1467,11 +1572,41 @@ function updateGamificationUI() {
 
       const div = document.createElement("div");
       div.className = `badge-item ${unlocked ? "unlocked" : ""}`;
-      div.title = unlocked ? `${badge.name}: ${badge.desc}` : "Bloqueado";
+      const status = unlocked ? "Conquistado!" : "Bloqueado";
+      div.title = `${badge.name}\n${badge.desc}\n(${status})`;
       div.innerHTML = `<i class="fas ${badge.icon}"></i>`;
-      grid.appendChild(div);
+
+      grid.appendChild(div); // <--- O APPEND QUE FALTAVA!
     });
   }
+
+  // Log de XP (Correção Bug #3 e #7) [cite: 260]
+  const logContainer = document.getElementById("xpLogList");
+  if (logContainer && userProfile.xpLog) {
+    logContainer.innerHTML = userProfile.xpLog
+      .slice(0, 5) // Mantém 5 itens
+      .map((log) => {
+        // Formata data se existir
+        let timeStr = "";
+        if (log.date) {
+          const d = new Date(log.date);
+          timeStr = d.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+        }
+
+        return `<div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; flex-direction:column;">
+                <span>${log.reason}</span>
+                <span style="font-size:0.65rem; opacity:0.5">${timeStr}</span>
+            </div>
+            <span style="color:var(--success)">+${log.amount} XP</span>
+         </div>`;
+      })
+      .join("");
+  }
+
   renderWeeklyChart();
 }
 
@@ -1532,3 +1667,52 @@ function renderWeeklyChart() {
     container.appendChild(col);
   }
 }
+
+function renderAchievementsTab() {
+  const list = document.getElementById("achievementsList");
+  const countEl = document.getElementById("badgeCount");
+  if (!list) return;
+
+  list.innerHTML = "";
+
+  const totalBadges = Object.keys(BADGES).length;
+  const unlockedBadges = userProfile.badges.length;
+  countEl.innerText = `${unlockedBadges}/${totalBadges}`;
+
+  Object.keys(BADGES).forEach((key) => {
+    const badge = BADGES[key];
+    const isUnlocked = userProfile.badges.includes(key);
+
+    const card = document.createElement("div");
+    card.className = `achievement-card ${isUnlocked ? "unlocked" : ""}`;
+
+    // Tenta achar a data de desbloqueio (se salvarmos isso futuramente no userProfile.badges como objeto)
+    // Por enquanto, mostra XP ou Status
+
+    card.innerHTML = `
+        <div class="ach-icon"><i class="fas ${badge.icon}"></i></div>
+        <div class="ach-info">
+            <h4>${badge.name}</h4>
+            <p>${badge.desc}</p>
+        </div>
+        <div class="ach-xp">${
+          isUnlocked ? "CONQUISTADO" : `+${badge.xp} XP`
+        }</div>
+    `;
+
+    list.appendChild(card);
+  });
+}
+
+document.addEventListener("visibilitychange", () => {
+  const video = document.getElementById("videoPlayer");
+  // Se minimizou e o vídeo está tocando
+  if (document.hidden && video && !video.paused) {
+    video.pause();
+
+    // Correção Bug #4: Reseta o tracker para não bugar o tempo quando voltar
+    lastVideoTime = video.currentTime;
+
+    document.title = "Ausente - Vídeo Pausado";
+  }
+});

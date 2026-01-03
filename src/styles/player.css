@@ -1544,3 +1544,76 @@ input[type="range"]#volumeBar::-webkit-slider-thumb {
     opacity: 0;
   }
 }
+
+.achievements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 20px;
+}
+
+.achievement-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-tertiary);
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  opacity: 0.6;
+  transition: 0.2s;
+}
+
+.achievement-card.unlocked {
+  opacity: 1;
+  background: linear-gradient(90deg, rgba(251, 191, 36, 0.1), transparent);
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.ach-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+}
+
+.achievement-card.unlocked .ach-icon {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.2);
+}
+
+.ach-info {
+  flex: 1;
+}
+.ach-info h4 {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+.ach-info p {
+  margin: 2px 0 0;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+.ach-xp {
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #fbbf24;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Efeito de Hover nas Badges */
+.badge-item:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.1);
+}

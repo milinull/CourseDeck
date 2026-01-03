@@ -10,6 +10,18 @@ const watchedVideosFile = path.join(
 );
 const notesFile = path.join(app.getPath("userData"), "user-notes.json");
 
+const profileFile = path.join(app.getPath("userData"), "user-profile.json");
+
+ipcMain.handle("save-profile", (event, data) => {
+  fs.writeFileSync(profileFile, JSON.stringify(data, null, 2));
+});
+
+ipcMain.handle("get-profile", () => {
+  if (fs.existsSync(profileFile))
+    return JSON.parse(fs.readFileSync(profileFile));
+  return null;
+});
+
 function loadWatchedVideos() {
   try {
     if (fs.existsSync(watchedVideosFile)) {
