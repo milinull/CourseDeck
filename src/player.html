@@ -1,150 +1,499 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Course Deck</title>
-  <link rel="stylesheet" href="styles/player.css">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-</head>
+  <head>
+    <title>Course Deck</title>
+    <link rel="stylesheet" href="styles/player.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.quilljs.com/1.3.6/quill.snow.css"
+      rel="stylesheet"
+    />
+  </head>
 
-<body>
-  <div class="header">
-    <div class="header-left">
-        <button class="icon-btn" onclick="toggleSidebar()" title="Expandir/Recolher Menu">
-            <i class="fas fa-bars"></i>
+  <body>
+    <div class="header">
+      <div class="header-left">
+        <button
+          class="icon-btn"
+          onclick="toggleSidebar()"
+          title="Expandir/Recolher Menu"
+        >
+          <i class="fas fa-bars"></i>
         </button>
-        <button class="change-folder" onclick="window.location.href='welcome.html'">
-            <i class="fas fa-arrow-left"></i> Voltar
+        <button
+          class="change-folder"
+          onclick="window.location.href='welcome.html'"
+        >
+          <i class="fas fa-arrow-left"></i> Voltar
         </button>
+      </div>
+
+      <h1 id="courseTitle">Course Deck</h1>
+
+      <div class="header-right">
+        <button
+          class="icon-btn"
+          onclick="toggleNotesSidebar()"
+          title="Mostrar/Esconder Anotações"
+        >
+          <i class="fas fa-columns"></i>
+        </button>
+      </div>
     </div>
 
-    <h1 id="courseTitle">Course Deck</h1>
-   
-    <div class="header-right">
-        <button class="icon-btn" onclick="toggleNotesSidebar()" title="Mostrar/Esconder Anotações">
-            <i class="fas fa-columns"></i>
-        </button>
-    </div>
-  </div>
-
-<div class="container">
+    <div class="container">
       <div class="sidebar">
-        <div style="padding: 16px 16px 0 16px;">
-            <input type="text" id="searchBox" placeholder="Buscar aula..." onkeyup="filterLessons(this.value)" class="search-input">
+        <div style="padding: 16px 16px 0 16px">
+          <input
+            type="text"
+            id="searchBox"
+            placeholder="Buscar aula..."
+            onkeyup="filterLessons(this.value)"
+            class="search-input"
+          />
         </div>
         <div id="courseList" class="courseList"></div>
       </div>
 
-      <div id="resizer" class="resizer"></div> 
+      <div id="resizer" class="resizer"></div>
 
       <div class="main-content">
-           <div class="content-area">
-                <div id="videoContainer" style="display: none;">
-                    <div class="video-player-container">
-                        <video id="videoPlayer" controls>Seu navegador não suporta vídeo.</video>
-                    </div>
-                    <div class="video-controls">
-                        <button onclick="toggleTheaterMode()" class="nav-btn" title="Modo Cinema (T)" style="flex: 0;"><i class="fas fa-tv"></i></button>
-                        <button onclick="prevLesson()" class="nav-btn"><i class="fas fa-step-backward"></i> Anterior</button>
-                        <button onclick="toggleCaptions()" id="btnCaptions" class="nav-btn" title="Ligar/Desligar Legenda"><i class="fas fa-closed-captioning"></i></button>
-                        <select id="speedRate" class="speed-selector" onchange="changeSpeed(this)">
-                            <option value="1">1.0x</option>
-                            <option value="1.25">1.25x</option>
-                            <option value="1.5">1.5x</option>
-                            <option value="2">2.0x</option>
-                        </select>
-                        <button onclick="nextLesson()" class="nav-btn">Próximo <i class="fas fa-step-forward"></i></button>
-                    </div>
-                    <div id="transcriptContainer" style="display: none; margin-top: 16px;">
-                        <button class="accordion-toggle" onclick="toggleSection('transcriptContent', this)">
-                            <span><i class="fas fa-closed-captioning"></i> Transcrição</span>
-                            <i class="fas fa-chevron-down arrow"></i>
-                        </button>
-                        <div id="transcriptContent" class="accordion-content" style="display: none;">
-                            <div id="transcriptText"></div>
-                        </div>
-                    </div>
+        <div class="content-area">
+          <div id="videoContainer" style="display: none">
+            <div class="video-player-wrapper" id="playerWrapper">
+              <video id="videoPlayer" onclick="togglePlay()">
+                Seu navegador não suporta vídeo.
+              </video>
+
+              <div class="center-play-btn" onclick="togglePlay()">
+                <i class="fas fa-play"></i>
+              </div>
+
+              <div class="custom-controls">
+                <div class="progress-area-container">
+                  <input
+                    type="range"
+                    id="progressBar"
+                    min="0"
+                    max="100"
+                    value="0"
+                    step="0.1"
+                    oninput="seekVideo(this.value)"
+                  />
+                  <div class="progress-tooltip" id="progressTooltip">00:00</div>
                 </div>
-                <div id="textContainer" style="display: none; height: 100%; flex-direction: column;">
-                    <div class="text-lesson-paper"><iframe id="contentFrame" class="content-frame"></iframe></div>
-                    <div class="video-controls" style="flex-shrink: 0;">
-                        <button onclick="prevLesson()" class="nav-btn">Anterior</button>
-                        <button onclick="nextLesson()" class="nav-btn">Próximo</button>
+
+                <div class="controls-row">
+                  <div class="controls-left">
+                    <button
+                      onclick="togglePlay()"
+                      id="playPauseBtn"
+                      title="Play/Pause (Espaço)"
+                    >
+                      <i class="fas fa-play"></i>
+                    </button>
+
+                    <div class="volume-container">
+                      <button onclick="toggleMute()" id="muteBtn">
+                        <i class="fas fa-volume-up"></i>
+                      </button>
+                      <input
+                        type="range"
+                        id="volumeBar"
+                        min="0"
+                        max="1"
+                        step="0.05"
+                        value="1"
+                        oninput="setVolume(this.value)"
+                      />
                     </div>
+
+                    <div class="time-display">
+                      <span id="currentTime">0:00</span> /
+                      <span id="duration">0:00</span>
+                    </div>
+                  </div>
+
+                  <div class="controls-right">
+                    <div class="speed-menu-container">
+                      <button
+                        class="control-btn-text"
+                        id="speedBtn"
+                        onclick="toggleSpeedMenu()"
+                      >
+                        1x
+                      </button>
+                      <div class="speed-dropdown" id="speedDropdown">
+                        <div onclick="setSpeed(0.5)">0.5x</div>
+                        <div onclick="setSpeed(1.0)" class="active">1.0x</div>
+                        <div onclick="setSpeed(1.25)">1.25x</div>
+                        <div onclick="setSpeed(1.5)">1.5x</div>
+                        <div onclick="setSpeed(2.0)">2.0x</div>
+                      </div>
+                    </div>
+
+                    <button
+                      onclick="toggleCaptions()"
+                      id="btnCaptions"
+                      title="Legenda (C)"
+                    >
+                      <i class="fas fa-closed-captioning"></i>
+                    </button>
+
+                    <button
+                      onclick="toggleTheaterMode()"
+                      title="Modo Teatro (T)"
+                    >
+                      <i class="fas fa-tv"></i>
+                    </button>
+
+                    <button onclick="toggleFullscreen()" title="Tela Cheia (F)">
+                      <i class="fas fa-expand"></i>
+                    </button>
+                  </div>
                 </div>
-           </div>
+              </div>
+            </div>
+
+            <div class="lesson-navigation-bar">
+              <button onclick="prevLesson()" class="nav-simple">
+                <i class="fas fa-chevron-left"></i> Anterior
+              </button>
+              <button onclick="nextLesson()" class="nav-simple">
+                Próxima <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+
+            <div
+              id="transcriptContainer"
+              style="display: none; margin-top: 16px"
+            >
+              <button
+                class="accordion-toggle"
+                onclick="toggleSection('transcriptContent', this)"
+              >
+                <span
+                  ><i class="fas fa-list-alt"></i> Transcrição / Legenda</span
+                >
+                <i class="fas fa-chevron-down arrow"></i>
+              </button>
+              <div
+                id="transcriptContent"
+                class="accordion-content"
+                style="display: none"
+              >
+                <div id="transcriptText"></div>
+              </div>
+            </div>
+          </div>
+          <div
+            id="textContainer"
+            style="display: none; height: 100%; flex-direction: column"
+          >
+            <div class="text-lesson-paper">
+              <iframe id="contentFrame" class="content-frame"></iframe>
+            </div>
+            <div class="video-controls" style="flex-shrink: 0">
+              <button onclick="prevLesson()" class="nav-btn">Anterior</button>
+              <button onclick="nextLesson()" class="nav-btn">Próximo</button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div id="resizer-right" class="resizer"></div>
 
       <div class="notes-sidebar">
-            <div class="notes-header">
-                <i class="fas fa-sticky-note"></i> Minhas Anotações
-            </div>
+        <div class="notes-header">
+          <i class="fas fa-sticky-note"></i> Painel do Aluno
+        </div>
 
-            <div class="pomodoro-widget">
-                <div class="pomo-display-area">
-                    <div id="pomoWork" class="timer-text active" onclick="setPomoMode('work')" title="Foco">
-                        <input type="number" id="workMin" value="25" min="1" onchange="updatePomoSettings()">:<span id="workSec">00</span>
-                    </div>
-                    <span class="pomo-separator">|</span>
-                    <div id="pomoBreak" class="timer-text" onclick="setPomoMode('break')" title="Pausa">
-                        <input type="number" id="breakMin" value="05" min="1" onchange="updatePomoSettings()">:<span id="breakSec">00</span>
-                    </div>
-                </div>
-                <div class="pomo-controls-mini">
-                    <button onclick="togglePomodoro()" id="pomoBtn"><i class="fas fa-play"></i></button>
-                    <button onclick="resetPomodoro()"><i class="fas fa-redo"></i></button>
-                </div>
+        <div class="sidebar-tabs-header">
+          <button
+            onclick="switchTab('notes')"
+            class="tab-btn active"
+            id="tab-btn-notes"
+            title="Anotações"
+          >
+            <i class="fas fa-edit"></i>
+          </button>
+          <button
+            onclick="switchTab('calendar')"
+            class="tab-btn"
+            id="tab-btn-calendar"
+            title="Calendário"
+          >
+            <i class="fas fa-calendar-alt"></i>
+          </button>
+          <button
+            onclick="switchTab('stats')"
+            class="tab-btn"
+            id="tab-btn-stats"
+            title="Progresso"
+          >
+            <i class="fas fa-chart-bar"></i>
+          </button>
+        </div>
+
+        <div class="pomodoro-widget">
+          <div class="pomo-display-area">
+            <div
+              id="pomoWork"
+              class="timer-text active"
+              onclick="setPomoMode('work')"
+              title="Foco"
+            >
+              <input
+                type="number"
+                id="workMin"
+                value="25"
+                min="1"
+                onchange="updatePomoSettings()"
+              />:<span id="workSec">00</span>
             </div>
-            
+            <span class="pomo-separator">|</span>
+            <div
+              id="pomoBreak"
+              class="timer-text"
+              onclick="setPomoMode('break')"
+              title="Pausa"
+            >
+              <input
+                type="number"
+                id="breakMin"
+                value="05"
+                min="1"
+                onchange="updatePomoSettings()"
+              />:<span id="breakSec">00</span>
+            </div>
+          </div>
+          <div class="pomo-controls-mini">
+            <button onclick="togglePomodoro()" id="pomoBtn">
+              <i class="fas fa-play"></i>
+            </button>
+            <button onclick="resetPomodoro()">
+              <i class="fas fa-redo"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="sidebar-content-wrapper">
+          <div id="view-notes" class="tab-view active-view">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 5px;
+                font-size: 0.8rem;
+                color: var(--text-secondary);
+              "
+            >
+              <span>Editando aula atual</span>
+              <span id="saveStatus">Pronto</span>
+            </div>
             <div id="editor-container">
-                 <div id="editor"></div>
+              <div id="editor"></div>
             </div>
-            
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; gap: 15px;">
-                <button onclick="openDrawingModal()" class="nav-btn" style="font-size: 0.8rem; padding: 6px 12px; width: auto; white-space: nowrap;">
-                    <i class="fas fa-pencil-ruler"></i> Desenhar
-                </button>
-                <p id="saveStatus" style="margin: 0; white-space: nowrap;">Pronto para digitar</p>
-            </div>
-      </div>
-  </div>
 
-  <div id="drawingModal" class="modal-overlay">
-      <div class="modal-content">
-          <div class="modal-header">
-              <h3 style="margin-right: auto;">Gráfico</h3>
-              
-              <div class="palette-container">
-                  <div class="color-swatch active" style="background: #ffffff;" onclick="setColor('#ffffff', this)"></div>
-                  <div class="color-swatch" style="background: #efde44;" onclick="setColor('#efde44', this)"></div>
-                  <div class="color-swatch" style="background: #06b6d4;" onclick="setColor('#06b6d4', this)"></div>
-                  <div class="color-swatch" style="background: #ef4444;" onclick="setColor('#ef4444', this)"></div>
-                  <div class="color-swatch" style="background: #22c55e;" onclick="setColor('#22c55e', this)"></div>
-              </div>
-
-              <div class="tools">
-                  <button onclick="undoLastStroke()" title="Desfazer (Ctrl+Z)"><i class="fas fa-undo"></i></button>
-                  <button onclick="toggleEraser(this)" id="btnEraser" title="Borracha"><i class="fas fa-eraser"></i></button>
-                  
-                  <button onclick="clearCanvas()" title="Limpar Tudo"><i class="fas fa-trash"></i></button>
-                  <button onclick="closeDrawingModal()" title="Cancelar"><i class="fas fa-times"></i></button>
-              </div>
-          </div>
-          
-          <div class="canvas-wrapper">
-              <canvas id="drawingCanvas"></canvas>
-          </div>
-          <div class="modal-footer">
-              <button onclick="insertDrawing()" class="nav-btn" style="width: 100%; justify-content: center; background: var(--success); color: #fff; border: none;">
-                  Inserir no Texto
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 8px;
+                gap: 15px;
+              "
+            >
+              <button
+                onclick="openDrawingModal()"
+                class="nav-btn"
+                style="
+                  font-size: 0.8rem;
+                  padding: 6px 12px;
+                  width: auto;
+                  white-space: nowrap;
+                "
+              >
+                <i class="fas fa-pencil-ruler"></i> Desenhar
               </button>
+            </div>
           </div>
-      </div>
-  </div>
 
-  <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
-  <script src="js/player.js"></script>
-</body>
+          <div id="view-calendar" class="tab-view">
+            <div class="view-header">
+              <span id="calMonthName">Janeiro 2026</span>
+              <div class="cal-nav">
+                <button onclick="changeMonth(-1)">
+                  <i class="fas fa-chevron-left"></i>
+                </button>
+                <button onclick="changeMonth(1)">
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="calendar-wrapper">
+              <div class="weekdays">
+                <div>D</div>
+                <div>S</div>
+                <div>T</div>
+                <div>Q</div>
+                <div>Q</div>
+                <div>S</div>
+                <div>S</div>
+              </div>
+              <div id="calendarGrid" class="calendar-grid"></div>
+            </div>
+
+            <div class="streak-card">
+              <i class="fas fa-fire"></i>
+              <div>
+                <span
+                  style="font-size: 1.2rem; font-weight: bold; color: #fff"
+                  id="streakCount"
+                  >0</span
+                >
+                <span style="font-size: 0.8rem">Dias seguidos de foco</span>
+              </div>
+            </div>
+          </div>
+          <div id="view-stats" class="tab-view">
+            <div class="view-header">
+              <span>Perfil do Aluno</span>
+            </div>
+
+            <div class="level-card">
+              <div class="level-header">
+                <div class="rank-badge" id="rankBadge">Novato</div>
+                <span class="xp-text"><span id="currentXP">0</span> XP</span>
+              </div>
+              <div class="xp-bar-container">
+                <div class="xp-bar-fill" id="xpBarFill" style="width: 0%"></div>
+              </div>
+              <p class="next-level-text">
+                Próximo: <span id="nextRank">Aprendiz</span>
+              </p>
+            </div>
+
+            <div class="gamification-stats">
+              <div class="g-stat">
+                <i class="fas fa-fire" style="color: #f59e0b"></i>
+                <span id="statStreak">0</span>
+                <small>Streak</small>
+              </div>
+              <div class="g-stat">
+                <i class="fas fa-hourglass-half" style="color: #3b82f6"></i>
+                <span id="statRealTime">0h</span>
+                <small>Tempo Real</small>
+              </div>
+              <div class="g-stat">
+                <i class="fas fa-check-double" style="color: #10b981"></i>
+                <span id="statCompleted">0</span>
+                <small>Aulas</small>
+              </div>
+            </div>
+
+            <h4
+              style="
+                margin: 20px 0 10px 0;
+                font-size: 0.9rem;
+                color: var(--text-secondary);
+              "
+            >
+              Minhas Conquistas
+            </h4>
+            <div class="badges-grid" id="badgesGrid"></div>
+
+            <div class="chart-section" style="margin-top: 20px">
+              <h4>Consistência (Últimos 7 dias)</h4>
+              <div class="bar-chart-container" id="weeklyChart"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="drawingModal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 style="margin-right: auto">Gráfico</h3>
+
+          <div class="palette-container">
+            <div
+              class="color-swatch active"
+              style="background: #ffffff"
+              onclick="setColor('#ffffff', this)"
+            ></div>
+            <div
+              class="color-swatch"
+              style="background: #efde44"
+              onclick="setColor('#efde44', this)"
+            ></div>
+            <div
+              class="color-swatch"
+              style="background: #06b6d4"
+              onclick="setColor('#06b6d4', this)"
+            ></div>
+            <div
+              class="color-swatch"
+              style="background: #ef4444"
+              onclick="setColor('#ef4444', this)"
+            ></div>
+            <div
+              class="color-swatch"
+              style="background: #22c55e"
+              onclick="setColor('#22c55e', this)"
+            ></div>
+          </div>
+
+          <div class="tools">
+            <button onclick="undoLastStroke()" title="Desfazer (Ctrl+Z)">
+              <i class="fas fa-undo"></i>
+            </button>
+            <button
+              onclick="toggleEraser(this)"
+              id="btnEraser"
+              title="Borracha"
+            >
+              <i class="fas fa-eraser"></i>
+            </button>
+
+            <button onclick="clearCanvas()" title="Limpar Tudo">
+              <i class="fas fa-trash"></i>
+            </button>
+            <button onclick="closeDrawingModal()" title="Cancelar">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="canvas-wrapper">
+          <canvas id="drawingCanvas"></canvas>
+        </div>
+        <div class="modal-footer">
+          <button
+            onclick="insertDrawing()"
+            class="nav-btn"
+            style="
+              width: 100%;
+              justify-content: center;
+              background: var(--success);
+              color: #fff;
+              border: none;
+            "
+          >
+            Inserir no Texto
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script src="js/player.js"></script>
+
+    <div id="toast-container" class="toast-container"></div>
+  </body>
 </html>
