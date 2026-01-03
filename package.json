@@ -1,36 +1,47 @@
 {
-  "name": "course-manager",
+  "name": "course-deck",
+  "productName": "Course Deck",
   "version": "1.0.0",
+  "description": "Plataforma local para gerenciar cursos com gamificação e anotações.",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder"
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "keywords": [
+    "education",
+    "player",
+    "gamification",
+    "electron",
+    "local"
+  ],
+  "author": "Naka",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^39.2.7",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {
+    "quill": "^2.0.3"
   },
   "build": {
-    "appId": "com.course-manager.electron",
-    "productName": "Course Manager",
+    "appId": "com.coursedeck.app",
+    "productName": "Course Deck",
     "directories": {
       "output": "dist"
     },
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
     "files": [
       "src/**/*",
+      "styles/**/*",
+      "assets/**/*",
+      "js/**/*",
+      "*.html",
       "package.json"
-    ],
-    "win": {
-      "icon": "src/assets/icon.ico",
-      "target": "nsis"
-    },
-    "mac": {
-      "icon": "src/assets/icon.icns",
-      "target": "dmg"
-    },
-    "linux": {
-      "icon": "src/assets/icon.png",
-      "target": "AppImage"
-    }
-  },
-  "devDependencies": {
-    "electron": "^39.2.7",
-    "electron-builder": "^25.1.8"
+    ]
   }
 }

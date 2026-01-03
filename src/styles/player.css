@@ -1473,21 +1473,51 @@ input[type="range"]#volumeBar::-webkit-slider-thumb {
   box-shadow: 0 0 10px rgba(251, 191, 36, 0.2);
 }
 
-/* Tooltip simples para badges */
+/* --- TOOLTIP DE BADGES CORRIGIDO V2 --- */
+.badge-item {
+  position: relative; /* Essencial para o absolute funcionar */
+}
+
 .badge-item:hover::after {
-  content: attr(title);
+  content: attr(data-tooltip);
   position: absolute;
-  bottom: -30px;
+
+  /* Posicionamento: Embaixo do ícone (Top 110%) evita cortar no topo */
+  top: 110%;
   left: 50%;
   transform: translateX(-50%);
-  background: black;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
+
+  /* Estilo da Caixa */
+  background: #09090b; /* Fundo bem escuro (bg-main) */
+  border: 1px solid var(--border);
+  color: #fff;
+  padding: 8px;
+  border-radius: 6px;
   font-size: 0.7rem;
-  white-space: nowrap;
-  z-index: 100;
+  line-height: 1.4;
+  text-align: center;
+
+  /* CORREÇÃO DO CORTE DE TEXTO */
+  white-space: normal; /* Permite quebrar linha */
+  word-wrap: break-word; /* Quebra palavras longas se precisar */
+  width: 140px; /* Largura fixa pequena para caber na sidebar */
+  min-width: 120px;
+
+  z-index: 9999; /* Garante que fique acima de tudo */
   pointer-events: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+}
+
+/* Triângulo apontando para cima (já que o tooltip está embaixo) */
+.badge-item:hover::before {
+  content: "";
+  position: absolute;
+  top: 100%; /* Logo abaixo do ícone */
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent var(--border) transparent; /* Aponta pra cima */
 }
 
 /* --- SISTEMA DE NOTIFICAÇÃO (TOAST) --- */

@@ -1523,7 +1523,6 @@ function checkAchievements() {
 }
 
 function updateGamificationUI() {
-  // Atualiza Painel
   const currentRank = getRank(userProfile.xp);
   const nextRankIndex = RANKS.indexOf(currentRank) + 1;
   const nextRank = RANKS[nextRankIndex] || {
@@ -1535,13 +1534,11 @@ function updateGamificationUI() {
   document.getElementById("currentXP").innerText = userProfile.xp;
   document.getElementById("nextRank").innerText = nextRank.name;
 
-  // Barra de XP
   const range = nextRank.minXP - currentRank.minXP;
   const progress = userProfile.xp - currentRank.minXP;
   const percent = Math.min(100, Math.max(0, (progress / range) * 100));
   document.getElementById("xpBarFill").style.width = `${percent}%`;
 
-  // Stats
   document.getElementById("statRealTime").innerText =
     (userProfile.totalWatchTime / 3600).toFixed(1) + "h";
 
@@ -1552,41 +1549,29 @@ function updateGamificationUI() {
     );
   document.getElementById("statCompleted").innerText = watchedTotal;
 
-  // Streak e Recorde (Correção Bug #2) [cite: 5, 256]
+  // --- STREAK ALINHADO (Visual Limpo Vertical) ---
   const streakEl = document.getElementById("streakCount");
   const record = userProfile.streakRecord || 0;
-  if (streakEl) {
-    // Mostra: "5 (Recorde: 12)"
-    document.getElementById(
-      "statStreak"
-    ).innerHTML = `${streakEl.innerText} <small style='font-size:0.6rem; opacity:0.7'>(Recorde: ${record})</small>`;
+  const statStreakDiv = document.getElementById("statStreak");
+
+  if (streakEl && statStreakDiv) {
+    statStreakDiv.style.display = "flex";
+    statStreakDiv.style.flexDirection = "column";
+    statStreakDiv.style.alignItems = "center";
+    statStreakDiv.style.lineHeight = "1.2";
+
+    statStreakDiv.innerHTML = `
+        <span style="font-size: 1.5rem; margin-bottom: -2px;">${streakEl.innerText}</span>
+        <span style="font-size: 0.6rem; color: #fbbf24; white-space: nowrap;">Rec: ${record}</span>
+    `;
   }
 
-  // Renderiza Badges (Correção Bug #1) [cite: 257]
-  const grid = document.getElementById("badgesGrid");
-  if (grid) {
-    grid.innerHTML = "";
-    Object.keys(BADGES).forEach((key) => {
-      const badge = BADGES[key];
-      const unlocked = userProfile.badges.includes(key);
-
-      const div = document.createElement("div");
-      div.className = `badge-item ${unlocked ? "unlocked" : ""}`;
-      const status = unlocked ? "Conquistado!" : "Bloqueado";
-      div.title = `${badge.name}\n${badge.desc}\n(${status})`;
-      div.innerHTML = `<i class="fas ${badge.icon}"></i>`;
-
-      grid.appendChild(div); // <--- O APPEND QUE FALTAVA!
-    });
-  }
-
-  // Log de XP (Correção Bug #3 e #7) [cite: 260]
+  // --- LOG DE XP (Últimas Atividades) ---
   const logContainer = document.getElementById("xpLogList");
   if (logContainer && userProfile.xpLog) {
     logContainer.innerHTML = userProfile.xpLog
-      .slice(0, 5) // Mantém 5 itens
+      .slice(0, 5)
       .map((log) => {
-        // Formata data se existir
         let timeStr = "";
         if (log.date) {
           const d = new Date(log.date);
@@ -1595,18 +1580,18 @@ function updateGamificationUI() {
             minute: "2-digit",
           });
         }
-
         return `<div style="display:flex; justify-content:space-between; align-items:center;">
             <div style="display:flex; flex-direction:column;">
-                <span>${log.reason}</span>
+                <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:120px;">${log.reason}</span>
                 <span style="font-size:0.65rem; opacity:0.5">${timeStr}</span>
             </div>
-            <span style="color:var(--success)">+${log.amount} XP</span>
+            <span style="color:var(--success); font-size:0.8rem;">+${log.amount}</span>
          </div>`;
       })
       .join("");
   }
 
+  // Renderiza o gráfico da semana
   renderWeeklyChart();
 }
 
