@@ -761,6 +761,7 @@ function updatePomoDisplay() {
   const minInput = document.getElementById(minInputId);
   const secSpan = document.getElementById(secSpanId);
 
+  // Atualiza apenas os números na tela do widget
   if (minInput && secSpan) {
     if (document.activeElement !== minInput) {
       minInput.value = minutes;
@@ -768,14 +769,10 @@ function updatePomoDisplay() {
     secSpan.innerText = seconds.toString().padStart(2, "0");
   }
 
-  if (isPomoRunning) {
-    const icon = currentMode === "work" ? "Foco" : "Pausa";
-    document.title = `(${minutes}:${seconds
-      .toString()
-      .padStart(2, "0")}) ${icon} - Course Deck`;
-  } else {
-    document.title = "Course Deck";
-  }
+  // --- ALTERAÇÃO AQUI ---
+  // Removi o código que mudava o document.title com o tempo.
+  // Agora ele força o título fixo sempre.
+  document.title = "Course Deck";
 }
 
 function updatePomoSettings() {
