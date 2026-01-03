@@ -1,13 +1,14 @@
 {
   "name": "course-deck",
-  "productName": "Course Deck",
-  "version": "1.0.0",
+  "productName": "CourseDeck",
+  "version": "1.0.1",
   "description": "Plataforma local para gerenciar cursos com gamificação e anotações.",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "build": "electron-builder"
   },
   "keywords": [
     "education",
@@ -16,7 +17,7 @@
     "electron",
     "local"
   ],
-  "author": "Naka",
+  "author": "Naka <naka@exemplo.com>",
   "license": "ISC",
   "devDependencies": {
     "electron": "^39.2.7",
@@ -27,13 +28,18 @@
   },
   "build": {
     "appId": "com.coursedeck.app",
-    "productName": "Course Deck",
+    "productName": "CourseDeck",
     "directories": {
       "output": "dist"
     },
     "win": {
       "target": "nsis",
       "icon": "assets/icon.ico"
+    },
+    "linux": {
+      "target": "deb",
+      "category": "Education",
+      "icon": "src/assets/icon.svg"
     },
     "files": [
       "src/**/*",
